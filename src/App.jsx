@@ -11,7 +11,7 @@ import './app.css'
 
 const App = () => (
 	<Router>
-		<div style={{ width: 600, margin: 'auto', marginTop: 75, marginBottom: 200 }}>
+		<div style={{ width: 600, margin: 'auto', marginTop: 75, marginBottom: 75 }}>
 			<div>
 				<Routes />
 			</div>

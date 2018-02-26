@@ -5,7 +5,7 @@ import { Card, Form, Row, Col, Input, Button } from 'antd'
 export default withSiteData(() => (
 	<Card>
 		<h1>Instant Domain Monitor</h1>
-		<p>Start monitoring the expiration date of any domain name instantly.</p>
+		<p>Start monitoring the expiration date of any domain name, instantly.</p>
 
 		<br />
 		<h2>How it works</h2>
@@ -55,7 +55,7 @@ export default withSiteData(() => (
 		<div>
 			<br />
 			<h3>Can I add more domains later?</h3>
-			<p>Yes, you can simply create a new list using the same email address as before. We will consolidate all your domain names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
+			<p>Yes, you can simply create a new list using the same email address. We will consolidate all your domain names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
 
 			<br />
 			<h3>Can I remove domains from my report?</h3>
