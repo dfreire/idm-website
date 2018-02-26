@@ -2,6 +2,7 @@ import React from 'react'
 import { Router, Link } from 'react-static'
 import { hot } from 'react-hot-loader'
 import 'antd/dist/antd.css'
+import './app.css'
 
 //
 import Routes from 'react-static-routes'
