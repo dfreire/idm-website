@@ -11,13 +11,13 @@ import './app.css'
 
 const App = () => (
 	<Router>
-		<div>
-			<nav>
-				<Link to="/">Home</Link>
-				<Link to="/about">About</Link>
-			</nav>
-			<div className="content">
+		<div style={{ width: 600, margin: 'auto', marginTop: 75, marginBottom: 200 }}>
+			<div>
 				<Routes />
+			</div>
+			<div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9em' }}>
+				<Link to="/about">Privacy Policy</Link>&nbsp;|&nbsp;
+				<Link to="/about">Cookies Policy</Link>
 			</div>
 		</div>
 	</Router>
