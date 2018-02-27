@@ -115,6 +115,10 @@ class Home extends React.Component {
 				<br />
 				<h2>FAQ</h2>
 				<div>
+				<br />
+					<h3>Which TLDs do you support?</h3>
+					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many TLDs as possible. We currently support more than 1000 TLDs including .com, .org, .net, country codes, and several of the most popular generic ones. If you want to monitor a domain name with a TLD that is not working, please contact our <a>support</a>.</p>
+					
 					<br />
 					<h3>Can I add more domains later?</h3>
 					<p>Yes, you can simply create a new list using the same email address you already used. We will consolidate all your domain names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
@@ -134,7 +138,7 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Can I change my email address?</h3>
-					<p>You can contact <a>support</a> to do it for you.</p>
+					<p>You can contact our <a>support</a> to do it for you.</p>
 				</div>
 
 				<br />
