@@ -53,6 +53,7 @@ class Home extends React.Component {
 
 				<br />
 				<h2>Domain names</h2>
+				<p>Don't worry if you mess up, we will check all the domains before you pay.</p>
 				<Form>
 					{this.state.domains.map((domain, i) => (
 						<Form.Item key={i} style={{ marginBottom: 1 }}>
@@ -134,11 +135,11 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Can I change my email address?</h3>
-					<p>You can contact our <a>support</a> to do it for you.</p>
+					<p>You can contact <a>support</a> to do it for you.</p>
 
 					<br />
 					<h3>Which TLDs do you support?</h3>
-					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs. If you want to monitor a domain name and it's not working, please contact our <a>support</a>.</p>
+					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs. If you want to monitor a domain name that isn't supported, please contact <a>support</a>.</p>
 				</div>
 
 				<br />
