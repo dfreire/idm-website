@@ -2,6 +2,13 @@ import React from 'react'
 import { withSiteData } from 'react-static'
 import { Card, Form, Row, Col, Input, Button } from 'antd'
 
+const basePrice = 1;
+const currency = '$';
+
+function formatPrice(price) {
+	return `${currency}${price}`;
+}
+
 class Home extends React.Component {
 	state = {
 		domains: [''],
@@ -41,7 +48,7 @@ class Home extends React.Component {
 				<ul>
 					<li>List the domain names you want to monitor.</li>
 					<li>Receive a weekly report by email (see an <a>example</a>), during 1 year, renewable.</li>
-					<li>Pay $1 for each domain.</li>
+					<li>Pay {formatPrice(basePrice)} for each domain.</li>
 				</ul>
 
 				<br />
@@ -101,7 +108,7 @@ class Home extends React.Component {
 				</Form>
 
 				<div>
-					<Button type="primary" size="large">{`Start monitoring for \$${this.state.domains.length}`}</Button>
+					<Button type="primary" size="large">Start monitoring for {formatPrice(this.state.domains.length * basePrice)}</Button>
 				</div>
 
 				<br />
@@ -122,8 +129,8 @@ class Home extends React.Component {
 
 					<br />
 					<h3>How much will the renewal cost?</h3>
-					<p>The cost will be $1 for each domain name present in the report at the time of the renewal.</p>
-					<p>For example, let's say your report was created in the 31st of January 2017 with 10 domain names for $10, and in October 2017 you have added 5 more domains for $5. The renewal will cost $15, due in the 31st of January 2018.</p>
+					<p>The cost will be {formatPrice(basePrice)} for each domain name present in the report at the time of the renewal.</p>
+					<p>For example, let's say your report was created in the 31st of January 2017 with 10 domain names for {formatPrice(basePrice * 10)}, and in October 2017 you have added 2 more domains for {formatPrice(basePrice * 2)}. The renewal will cost {formatPrice(basePrice * 12)}, due in the 31st of January 2018.</p>
 
 					<br />
 					<h3>Can I change my email address?</h3>
