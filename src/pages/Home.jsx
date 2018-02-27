@@ -45,11 +45,11 @@ class Home extends React.Component {
 
 				<br />
 				<h2>How it works</h2>
-				<ul>
+				<ol style={{ paddingLeft: 30, lineHeight: '1.8em' }}>
 					<li>List the domain names you want to monitor.</li>
-					<li>Receive a weekly report by email (see an <a>example</a>), during 1 year, renewable.</li>
 					<li>Pay {formatPrice(basePrice)} for each domain.</li>
-				</ul>
+					<li>Receive a weekly report by email (see an <a>example</a>), during 1 year, renewable.</li>
+				</ol>
 
 				<br />
 				<h2>Domain names</h2>
