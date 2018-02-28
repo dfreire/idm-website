@@ -143,7 +143,7 @@ class Home extends React.Component {
 
 				<br />
 				<h2>Domain names</h2>
-				<p style={{ fontSize: '0.9em' }}>Don't worry, we will validate the domains and remove repetitions before you pay</p>
+				<p style={{ fontSize: '0.95em' }}>Don't worry, we will validate the domains before you pay</p>
 				<Form>
 					{this.state.domains.map((domain, i) => (
 						<Form.Item
@@ -187,7 +187,7 @@ class Home extends React.Component {
 					))}
 				</Form>
 
-				<p style={{ color: 'red', fontSize: '0.9em' }}>{this.state.domainsErrorMessage}</p>
+				<p style={{ color: 'red', fontSize: '0.95em' }}>{this.state.domainsErrorMessage}</p>
 
 				<br />
 				<h2>Your Email</h2>
@@ -208,7 +208,7 @@ class Home extends React.Component {
 					</Form.Item>
 				</Form>
 
-				<p style={{ color: 'red', fontSize: '0.9em' }}>{this.state.emailErrorMessage}</p>
+				<p style={{ color: 'red', fontSize: '0.95em' }}>{this.state.emailErrorMessage}</p>
 
 				<br />
 				<Row gutter={24}>
@@ -225,12 +225,12 @@ class Home extends React.Component {
 					</Col>
 					<Col span={11}>
 						<Button
-							style={{ width: '100%', fontSize: '0.95em' }}
+							style={{ width: '100%', fontSize: '0.9em' }}
 							type="dashed"
 							size="large"
 							disabled={this.state.loading}
 						>
-							or don't, but provide feedback
+							Or don't, but give us your feedback
 						</Button>
 					</Col>
 				</Row>
@@ -241,7 +241,7 @@ class Home extends React.Component {
 				<div>
 					<br />
 					<h3>Can I add more domains later?</h3>
-					<p>Yes, you can simply create a new list using the same email address you already used. We will consolidate all your domain names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
+					<p>Yes, you can simply create a new list using the same email address as before. We will consolidate all your domain names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
 
 					<br />
 					<h3>Can I remove domains from my report?</h3>
@@ -262,7 +262,7 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Which TLDs do you support?</h3>
-					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs. If you want to monitor a domain name that isn't supported, please contact <a>support</a>.</p>
+					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs. If you are having trouble monitoring a domain you know it should work, please contact <a>support</a>.</p>
 				</div>
 
 				<br />
