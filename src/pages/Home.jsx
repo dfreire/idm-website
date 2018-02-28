@@ -11,7 +11,7 @@ function formatPrice(price) {
 	return `${currency}${price}`;
 }
 
-const emptyDomain = { name: '', error: false };
+const emptyDomain = { name: '', hasError: false };
 
 class Home extends React.Component {
 	state = {
@@ -19,6 +19,7 @@ class Home extends React.Component {
 		email: '',
 		loading: false,
 		loadingMessage: '',
+		errorMessage: '',
 	}
 
 	_onClickAddDomain = () => {
@@ -40,36 +41,67 @@ class Home extends React.Component {
 	}
 
 	_onChangeEmail = (email) => {
-		this.setState({ email });
+		this.setState({ email: email.trim() });
 	}
 
 	_onClickPay = async () => {
 		if (!this.state.loading) {
-			this.setState({ loading: true, loadingMessage: 'Validating the domain names...' });
+			this.setState({ loading: true, loadingMessage: 'Validating...' });
 
+			// validate email
+			if (!validateEmail(this.state.email)) {
+				this.setState({ loading: false, errorMessage: 'Please provide a valid email address' });
+				return;
+			}
+
+			// validate domains client-side
 			const names = this._getValidDomainNames();
+			console.log('valid names', names);
 
+			let allValid1 = true;
+			const domains1 = _.chain(this.state.domains)
+				.map(domain => {
+					const valid = domain.name.length === 0 || names.indexOf(domain.name) >= 0;
+					allValid1 = allValid1 && valid;
+					return { ...domain, hasError: !valid };
+				})
+				.value();
+
+			if (names.length === 0) {
+				this.setState({ loading: false, domains: domains1, errorMessage: 'There are no valid domains in the list' });
+				return;
+			}
+			if (!allValid1) {
+				this.setState({ loading: false, domains: domains1, errorMessage: 'There are invalid domains in the list' });
+				return;
+			}
+
+			// validate domains server-side
 			const response = await fetch('/api/whois', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ names }),
 			}).then(response => response.json());
 
-			const validationMap = response.result || {}; // { [name: string]: boolean }
+			const validByName = response.result || {};
+			console.log('validByName', validByName);
 
-			const domains = _.chain(this.state.domains)
-				.pluck('name')
-				.filter(name => name.length > 0)
-				.map(name => psl.isValid(name) ? psl.parse(name).domain : name)
-				.uniq()
-				.map(name => ({ name, error: validationMap[name] !== true }))
+			let allValid2 = true;
+			const domains2 = _.chain(this.state.domains)
+				.map(domain => {
+					const valid = domain.name.length === 0 || validByName[name] === true;
+					allValid2 = allValid2 && valid;
+					return { ...domain, hasError: !valid };
+				})
 				.value();
 
-			if (domains.length === 0) {
-				domains.push({ ...emptyDomain });
+			if (!allValid2) {
+				this.setState({ loading: false, domains: domains2, errorMessage: 'There are invalid domains in the list' })
+				return;
 			}
 
-			this.setState({ domains });
+			// proceed to payment
+
 			this.setState({ loading: false });
 		}
 	}
@@ -93,25 +125,25 @@ class Home extends React.Component {
 		return (
 			<Card>
 				<h1>Instant Domain Monitor</h1>
-				<p>Start monitoring the expiration date of any domain name, instantly.</p>
+				<p>Start monitoring the expiration date of any domain name, instantly</p>
 
 				<br />
 				<h2>How it works</h2>
 				<ol style={{ paddingLeft: 30, lineHeight: '1.8em' }}>
-					<li>List the domain names you want to monitor.</li>
-					<li>Pay {formatPrice(basePrice)} for each domainName.</li>
-					<li>Receive a weekly report by email (see an <a>example</a>), during 1 year, renewable.</li>
+					<li>List the domain names you want to monitor</li>
+					<li>Pay {formatPrice(basePrice)} for each monitored domain</li>
+					<li>Receive a weekly report by email (see an <a>example</a>), during 1 year, renewable</li>
 				</ol>
 
 				<br />
 				<h2>Domain names</h2>
-				<p>Don't worry, we will check the entire list before you pay.</p>
+				<p>Don't worry, we will check if the domains are valid before you pay</p>
 				<Form>
 					{this.state.domains.map((domain, i) => (
 						<Form.Item
 							key={i}
 							style={{ marginBottom: 1 }}
-							validateStatus={domain.error ? 'error' : 'success'}
+							validateStatus={domain.hasError ? 'error' : 'success'}
 						>
 							<Row>
 								<Col span={22}>
@@ -152,7 +184,7 @@ class Home extends React.Component {
 				<br />
 				<h2>Your Email</h2>
 				<Form>
-					<Form.Item>
+					<Form.Item style={{ marginBottom: 1 }}>
 						<Row>
 							<Col span={22}>
 								<Input
@@ -168,17 +200,31 @@ class Home extends React.Component {
 					</Form.Item>
 				</Form>
 
-				<div>
-					<Button
-						type="primary"
-						size="large"
-						onClick={this._onClickPay}
-						loading={this.state.loading}
-						disabled={namesLen === 0}
-					>
-						{payButtonText}
-					</Button>
-				</div>
+				<p style={{ color: 'red' }}>{this.state.errorMessage}</p>
+
+				<Row gutter={24}>
+					<Col span={11}>
+						<Button
+							style={{ width: '100%' }}
+							type="primary"
+							size="large"
+							onClick={this._onClickPay}
+							loading={this.state.loading}
+						>
+							{payButtonText}
+						</Button>
+					</Col>
+					<Col span={11}>
+						<Button
+							style={{ width: '100%', fontSize: '0.95em' }}
+							type="dashed"
+							size="large"
+							disabled={this.state.loading}
+						>
+							Don't pay, but provide feedback
+						</Button>
+					</Col>
+				</Row>
 
 				<br />
 				<br />
@@ -214,6 +260,11 @@ class Home extends React.Component {
 			</Card>
 		);
 	}
+}
+
+function validateEmail(email) {
+	var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+	return re.test(String(email).toLowerCase());
 }
 
 export default withSiteData(Home)
