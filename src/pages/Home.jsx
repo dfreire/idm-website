@@ -7,10 +7,6 @@ import psl from 'psl'
 const basePrice = 1.25;
 const currency = '$';
 
-function formatPrice(price) {
-	return `${currency}${price}`;
-}
-
 const emptyDomain = { name: '', hasError: false };
 
 class Home extends React.Component {
@@ -19,60 +15,64 @@ class Home extends React.Component {
 		email: '',
 		loading: false,
 		loadingMessage: '',
-		errorMessage: '',
+		domainsErrorMessage: '',
+		emailErrorMessage: '',
 	}
 
 	_onClickAddDomain = () => {
-		const { domains } = this.state;
+		const domains = [...this.state.domains];
 		domains.unshift({ ...emptyDomain });
 		this.setState({ domains });
 	}
 
 	_onClickRemoveDomain = (i) => {
-		const { domains } = this.state;
+		const domains = [...this.state.domains];
 		domains.splice(i, 1);
 		this.setState({ domains });
 	}
 
 	_onChangeDomainName = (i, name) => {
-		const { domains } = this.state;
-		domains[i].name = name.trim();
+		const valid = name.length === 0 || psl.isValid(name);
+		const domains = [...this.state.domains];
+		domains[i].name = name;
+		domains[i].hasError = !valid;
 		this.setState({ domains });
 	}
 
 	_onChangeEmail = (email) => {
-		this.setState({ email: email.trim() });
+		this.setState({ email });
 	}
 
 	_onClickPay = async () => {
 		if (!this.state.loading) {
-			this.setState({ loading: true, loadingMessage: 'Validating...' });
-
-			// validate email
-			if (!validateEmail(this.state.email)) {
-				this.setState({ loading: false, errorMessage: 'Please provide a valid email address' });
-				return;
-			}
+			this.setState({ loading: true, loadingMessage: 'Validating...', domainsErrorMessage: '', emailErrorMessage: '' });
 
 			// validate domains client-side
-			const names = this._getValidDomainNames();
-			console.log('valid names', names);
+			const parsedNames = this._getParsedDomainNames();
+			console.log('valid parsedNames', parsedNames);
 
 			let allValid1 = true;
 			const domains1 = _.chain(this.state.domains)
 				.map(domain => {
-					const valid = domain.name.length === 0 || names.indexOf(domain.name) >= 0;
+					const parsedName = psl.parse(domain.name).domain;
+					const valid = domain.name.length === 0 || parsedNames.indexOf(parsedName) >= 0;
 					allValid1 = allValid1 && valid;
 					return { ...domain, hasError: !valid };
 				})
 				.value();
 
-			if (names.length === 0) {
-				this.setState({ loading: false, domains: domains1, errorMessage: 'There are no valid domains in the list' });
+			if (parsedNames.length === 0) {
+				this.setState({ loading: false, domains: domains1, domainsErrorMessage: 'There are no valid domains in the list' });
 				return;
 			}
 			if (!allValid1) {
-				this.setState({ loading: false, domains: domains1, errorMessage: 'There are invalid domains in the list' });
+				this.setState({ loading: false, domains: domains1, domainsErrorMessage: 'There are invalid domains in the list' });
+				return;
+			}
+
+			// validate email
+			if (!validateEmail(this.state.email)) {
+				this.setState({ loading: false, emailErrorMessage: 'Please provide a valid email address' });
 				return;
 			}
 
@@ -80,7 +80,7 @@ class Home extends React.Component {
 			const response = await fetch('/api/whois', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ names }),
+				body: JSON.stringify({ names: parsedNames }),
 			}).then(response => response.json());
 
 			const validByName = response.result || {};
@@ -89,38 +89,39 @@ class Home extends React.Component {
 			let allValid2 = true;
 			const domains2 = _.chain(this.state.domains)
 				.map(domain => {
-					const valid = domain.name.length === 0 || validByName[name] === true;
+					const parsedName = psl.parse(domain.name).domain;
+					const valid = domain.name.length === 0 || validByName[parsedName] === true;
 					allValid2 = allValid2 && valid;
 					return { ...domain, hasError: !valid };
 				})
 				.value();
 
 			if (!allValid2) {
-				this.setState({ loading: false, domains: domains2, errorMessage: 'There are invalid domains in the list' })
+				this.setState({ loading: false, domains: domains2, domainsErrorMessage: 'There are invalid domains in the list' })
 				return;
 			}
 
 			// proceed to payment
 
-			this.setState({ loading: false });
+			this.setState({ loading: false, domainsErrorMessage: '', emailErrorMessage: '' });
 		}
 	}
 
-	_getValidDomainNames = () => {
+	_getParsedDomainNames = () => {
 		return _.chain(this.state.domains)
 			.pluck('name')
-			.filter(psl.isValid)
+			.filter(name => psl.isValid(name))
 			.map(name => psl.parse(name).domain)
 			.uniq()
 			.value();
 	}
 
 	render() {
-		const namesLen = this._getValidDomainNames().length;
+		const parsedNamesLen = this._getParsedDomainNames().length;
 
 		const payButtonText = this.state.loading
 			? this.state.loadingMessage
-			: `Start monitoring for ${formatPrice(namesLen * basePrice)}`;
+			: `Start monitoring for ${formatPrice(parsedNamesLen * basePrice)}`;
 
 		return (
 			<Card>
@@ -150,7 +151,7 @@ class Home extends React.Component {
 									<Input
 										placeholder="example.com"
 										value={domain.name}
-										onChange={evt => this._onChangeDomainName(i, evt.target.value)}
+										onChange={evt => this._onChangeDomainName(i, evt.target.value.trim())}
 										disabled={this.state.loading}
 									/>
 								</Col>
@@ -181,6 +182,8 @@ class Home extends React.Component {
 					))}
 				</Form>
 
+				<p style={{ color: 'red' }}>{this.state.domainsErrorMessage}</p>
+
 				<br />
 				<h2>Your Email</h2>
 				<Form>
@@ -190,7 +193,7 @@ class Home extends React.Component {
 								<Input
 									placeholder="name@example.com"
 									value={this.state.email}
-									onChange={evt => this._onChangeEmail(evt.target.value)}
+									onChange={evt => this._onChangeEmail(evt.target.value.trim())}
 									disabled={this.state.loading}
 								/>
 							</Col>
@@ -200,7 +203,7 @@ class Home extends React.Component {
 					</Form.Item>
 				</Form>
 
-				<p style={{ color: 'red' }}>{this.state.errorMessage}</p>
+				<p style={{ color: 'red' }}>{this.state.emailErrorMessage}</p>
 
 				<Row gutter={24}>
 					<Col span={11}>
@@ -221,7 +224,7 @@ class Home extends React.Component {
 							size="large"
 							disabled={this.state.loading}
 						>
-							Don't pay, but provide feedback
+							or don't, but provide feedback
 						</Button>
 					</Col>
 				</Row>
@@ -260,6 +263,10 @@ class Home extends React.Component {
 			</Card>
 		);
 	}
+}
+
+function formatPrice(price) {
+	return `${currency}${price}`;
 }
 
 function validateEmail(email) {
