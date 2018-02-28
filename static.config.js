@@ -34,6 +34,8 @@ export default {
 			<Head>
 				<meta charSet="UTF-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
+				<title>Instant Domain Monitor</title>
+				<link rel="icon" href="/favicon.ico" />
 				<script src="https://cdn.paddle.com/paddle/paddle.js"></script>
 			</Head>
 			<Body>{children}</Body>
