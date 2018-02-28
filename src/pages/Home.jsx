@@ -141,13 +141,13 @@ class Home extends React.Component {
 				<h2>How it works</h2>
 				<ol style={{ paddingLeft: 30, lineHeight: '1.8em' }}>
 					<li>List the domain names you want to monitor</li>
-					<li>Pay {formatPrice(basePrice)} for each monitored domain</li>
-					<li>Receive a weekly report by email (see an <a>example</a>), during 1 year, renewable</li>
+					<li>Pay {formatPrice(basePrice)}/year for each monitored domain</li>
+					<li>Receive a weekly report by email (see <a>example</a>)</li>
 				</ol>
 
 				<br />
 				<h2>Domain names</h2>
-				<p style={{ fontSize: '0.95em' }}>Don't worry, we will validate the domains before you pay</p>
+				<p style={{ fontSize: '0.95em' }}>We will validate all the domains before you pay</p>
 				<Form>
 					{this.state.domains.map((domain, i) => (
 						<Form.Item
@@ -234,7 +234,7 @@ class Home extends React.Component {
 							size="large"
 							disabled={this.state.loading}
 						>
-							Or don't, but give us your feedback
+							Or give us your honest feedback
 						</Button>
 					</Col>
 				</Row>
@@ -264,20 +264,12 @@ class Home extends React.Component {
 				<div>
 					<br />
 					<h3>Can I add more domains later?</h3>
-					<p>Yes, you can simply create a new list using the same email address as before. We will consolidate all your domain names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
+					<p>Yes, you can simply create a new list and use the same email address as before. We will consolidate all your domain names and deliver a single weekly report.</p>
+					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we will not charge it twice.</p>
 
 					<br />
 					<h3>Can I remove domains from my report?</h3>
-					<p>Only when the report is due to renew. Then, you will have the opportunity to review your domain names  list.</p>
-
-					<br />
-					<h3>When do I have to renew the report?</h3>
-					<p>You will be contacted to renew the report one year after its creation date and every year after that.</p>
-
-					<br />
-					<h3>How much will the renewal cost?</h3>
-					<p>The cost will be {formatPrice(basePrice)} for each domain name present in the report at the time of the renewal.</p>
-					<p>For example, let's say your report was created in the 31st of January 2017 with 10 domain names for {formatPrice(basePrice * 10)}, and in October 2017 you have added 2 more domains for {formatPrice(basePrice * 2)}. The renewal will cost {formatPrice(basePrice * 12)}, due in the 31st of January 2018.</p>
+					<p>You can contact <a>support</a> to do it for you.</p>
 
 					<br />
 					<h3>Can I change my email address?</h3>
@@ -285,7 +277,8 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Which TLDs do you support?</h3>
-					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs. If you are having trouble monitoring a domain you know it should work, please contact <a>support</a>.</p>
+					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs.</p>
+					<p>We also validate all the domain names in your list before you pay, so unsupported TLDs will not be included.</p>
 				</div>
 
 				<br />
