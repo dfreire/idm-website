@@ -4,14 +4,14 @@ import { withSiteData } from 'react-static'
 import { Card, Form, Row, Col, Input, Button } from 'antd'
 import psl from 'psl'
 
-const basePrice = 1;
+const basePrice = 1.25;
 const currency = '$';
 
 function formatPrice(price) {
 	return `${currency}${price}`;
 }
 
-const emptyDomain = { name: '', errorMessage: '' };
+const emptyDomain = { name: '', error: false };
 
 class Home extends React.Component {
 	state = {
@@ -47,12 +47,7 @@ class Home extends React.Component {
 		if (!this.state.loading) {
 			this.setState({ loading: true, loadingMessage: 'Validating the domain names...' });
 
-			const names = _.chain(this.state.domains)
-				.pluck('name')
-				.filter(psl.isValid)
-				.map(name => psl.parse(name).domain)
-				.uniq()
-				.value();
+			const names = this._getValidDomainNames();
 
 			const response = await fetch('/api/whois', {
 				method: 'POST',
@@ -67,7 +62,7 @@ class Home extends React.Component {
 				.filter(name => name.length > 0)
 				.map(name => psl.isValid(name) ? psl.parse(name).domain : name)
 				.uniq()
-				.map(name => ({ name, errorMessage: validationMap[name] === true ? '' : 'Domain name not recognized' }))
+				.map(name => ({ name, error: validationMap[name] !== true }))
 				.value();
 
 			if (domains.length === 0) {
@@ -79,34 +74,44 @@ class Home extends React.Component {
 		}
 	}
 
+	_getValidDomainNames = () => {
+		return _.chain(this.state.domains)
+			.pluck('name')
+			.filter(psl.isValid)
+			.map(name => psl.parse(name).domain)
+			.uniq()
+			.value();
+	}
+
 	render() {
+		const namesLen = this._getValidDomainNames().length;
+
 		const payButtonText = this.state.loading
 			? this.state.loadingMessage
-			: `Start monitoring for ${formatPrice(this.state.domains.length * basePrice)}`;
+			: `Start monitoring for ${formatPrice(namesLen * basePrice)}`;
 
 		return (
 			<Card>
 				<h1>Instant Domain Monitor</h1>
-				<p>Start monitoring the expiration date of any domainName name, instantly.</p>
+				<p>Start monitoring the expiration date of any domain name, instantly.</p>
 
 				<br />
 				<h2>How it works</h2>
 				<ol style={{ paddingLeft: 30, lineHeight: '1.8em' }}>
-					<li>List the domainName names you want to monitor.</li>
+					<li>List the domain names you want to monitor.</li>
 					<li>Pay {formatPrice(basePrice)} for each domainName.</li>
 					<li>Receive a weekly report by email (see an <a>example</a>), during 1 year, renewable.</li>
 				</ol>
 
 				<br />
 				<h2>Domain names</h2>
-				<p style={{ fontSize: '0.9em' }}>Don't worry about invalid domains, we will check the entire list before you pay.</p>
+				<p>Don't worry, we will check the entire list before you pay.</p>
 				<Form>
 					{this.state.domains.map((domain, i) => (
 						<Form.Item
 							key={i}
 							style={{ marginBottom: 1 }}
-							validateStatus={domain.errorMessage == null || domain.errorMessage.length === 0 ? 'success' : 'error'}
-							help={domain.errorMessage}
+							validateStatus={domain.error ? 'error' : 'success'}
 						>
 							<Row>
 								<Col span={22}>
@@ -169,6 +174,7 @@ class Home extends React.Component {
 						size="large"
 						onClick={this._onClickPay}
 						loading={this.state.loading}
+						disabled={namesLen === 0}
 					>
 						{payButtonText}
 					</Button>
@@ -180,11 +186,11 @@ class Home extends React.Component {
 				<div>
 					<br />
 					<h3>Can I add more domains later?</h3>
-					<p>Yes, you can simply create a new list using the same email address you already used. We will consolidate all your domainName names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
+					<p>Yes, you can simply create a new list using the same email address you already used. We will consolidate all your domain names and deliver a single weekly report. (Please continue reading this FAQ in order to understand how you will be charged.)</p>
 
 					<br />
 					<h3>Can I remove domains from my report?</h3>
-					<p>Only when the report is due to renew. Then, you will have the opportunity to review your domainName names  list.</p>
+					<p>Only when the report is due to renew. Then, you will have the opportunity to review your domain names  list.</p>
 
 					<br />
 					<h3>When do I have to renew the report?</h3>
@@ -192,8 +198,8 @@ class Home extends React.Component {
 
 					<br />
 					<h3>How much will the renewal cost?</h3>
-					<p>The cost will be {formatPrice(basePrice)} for each domainName name present in the report at the time of the renewal.</p>
-					<p>For example, let's say your report was created in the 31st of January 2017 with 10 domainName names for {formatPrice(basePrice * 10)}, and in October 2017 you have added 2 more domains for {formatPrice(basePrice * 2)}. The renewal will cost {formatPrice(basePrice * 12)}, due in the 31st of January 2018.</p>
+					<p>The cost will be {formatPrice(basePrice)} for each domain name present in the report at the time of the renewal.</p>
+					<p>For example, let's say your report was created in the 31st of January 2017 with 10 domain names for {formatPrice(basePrice * 10)}, and in October 2017 you have added 2 more domains for {formatPrice(basePrice * 2)}. The renewal will cost {formatPrice(basePrice * 12)}, due in the 31st of January 2018.</p>
 
 					<br />
 					<h3>Can I change my email address?</h3>
@@ -201,7 +207,7 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Which TLDs do you support?</h3>
-					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs. If you want to monitor a domainName name that isn't supported, please contact <a>support</a>.</p>
+					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs. If you want to monitor a domain name that isn't supported, please contact <a>support</a>.</p>
 				</div>
 
 				<br />
