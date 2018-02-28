@@ -1,31 +1,27 @@
 import _ from 'underscore'
 import React from 'react'
 import { withSiteData } from 'react-static'
-import { Card, Form, Row, Col, Input, Button } from 'antd'
+import { Card, Form, Row, Col, Input, Button, Alert } from 'antd'
 import psl from 'psl'
 
 const basePrice = 1.25;
 const currency = '$';
 
-const emptyDomain = { name: '', hasError: false };
-
 class Home extends React.Component {
-	state = {
-		domains: [{ ...emptyDomain }],
-		email: '',
-		loading: false,
-		loadingMessage: '',
-		domainsErrorMessage: '',
-		emailErrorMessage: '',
-	}
+	state = getInitialState();
 
 	componentWillMount() {
+		Paddle.Setup({ vendor: 21790 });
+		Paddle.Product.Prices(525713, function (prices) {
+			console.log('prices', prices);
 
+			// 185.101.177.56
+		});
 	}
 
 	_onClickAddDomain = () => {
 		const domains = [...this.state.domains];
-		domains.unshift({ ...emptyDomain });
+		domains.unshift(getEmptyDomain());
 		this.setState({ domains, domainsErrorMessage: '' });
 	}
 
@@ -111,9 +107,19 @@ class Home extends React.Component {
 			}
 
 			// proceed to payment
+			const email = this.state.email;
 			const finalNames = getUniqueValidNames(domains2);
 			console.log('final names', finalNames);
-
+			Paddle.Checkout.open({
+				product: 525713,
+				quantity: finalNames.length,
+				email,
+				successCallback: () => {
+				},
+				closeCallback: () => {
+					this.setState({ ...getInitialState(), showSuccessMessage: true, email });
+				},
+			});
 
 			this.setState({ loading: false, domainsErrorMessage: '', emailErrorMessage: '' });
 		}
@@ -233,6 +239,25 @@ class Home extends React.Component {
 					</Col>
 				</Row>
 
+				{this.state.showSuccessMessage &&
+					<Row gutter={24}>
+						<Col span={22}>
+							<br />
+							<Alert
+								type="success"
+								message={
+									<div>
+										<h3>Thank you for using our service</h3>
+										<p>We will start sending you weekly reports by mail</p>
+									</div>
+								}
+								closable={true}
+								onClose={() => this.setState({ showSuccessMessage: false })}
+							/>
+						</Col>
+					</Row>
+				}
+
 				<br />
 				<br />
 				<h2>FAQ</h2>
@@ -267,6 +292,22 @@ class Home extends React.Component {
 			</Card>
 		);
 	}
+}
+
+function getInitialState() {
+	return {
+		domains: [getEmptyDomain()],
+		email: '',
+		loading: false,
+		loadingMessage: '',
+		domainsErrorMessage: '',
+		emailErrorMessage: '',
+		showSuccessMessage: false,
+	};
+}
+
+function getEmptyDomain() {
+	return { name: '', hasError: false };
 }
 
 function getUniqueValidNames(domains) {
