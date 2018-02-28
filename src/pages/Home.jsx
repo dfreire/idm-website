@@ -19,6 +19,10 @@ class Home extends React.Component {
 		emailErrorMessage: '',
 	}
 
+	componentWillMount() {
+
+	}
+
 	_onClickAddDomain = () => {
 		const domains = [...this.state.domains];
 		domains.unshift({ ...emptyDomain });
@@ -49,20 +53,20 @@ class Home extends React.Component {
 			let continueToServer = true;
 
 			// validate domains client-side
-			const parsedNames = this._getParsedDomainNames();
-			console.log('valid parsedNames', parsedNames);
+			const validNames = getUniqueValidNames(this.state.domains);
+			console.log('valid validNames', validNames);
 
 			let allValid1 = true;
 			const domains1 = _.chain(this.state.domains)
 				.map(domain => {
-					const parsedName = psl.parse(domain.name).domain;
-					const valid = domain.name.length === 0 || parsedNames.indexOf(parsedName) >= 0;
+					const validName = psl.parse(domain.name).domain;
+					const valid = domain.name.length === 0 || validNames.indexOf(validName) >= 0;
 					allValid1 = allValid1 && valid;
 					return { ...domain, hasError: !valid };
 				})
 				.value();
 
-			if (parsedNames.length === 0) {
+			if (validNames.length === 0) {
 				this.setState({ loading: false, domains: domains1, domainsErrorMessage: 'There are no valid domains in the list' });
 				continueToServer = false;
 			}
@@ -85,7 +89,7 @@ class Home extends React.Component {
 			const response = await fetch('/api/whois', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ names: parsedNames }),
+				body: JSON.stringify({ names: validNames }),
 			}).then(response => response.json());
 
 			const validByName = response.result || {};
@@ -94,8 +98,8 @@ class Home extends React.Component {
 			let allValid2 = true;
 			const domains2 = _.chain(this.state.domains)
 				.map(domain => {
-					const parsedName = psl.parse(domain.name).domain;
-					const valid = domain.name.length === 0 || validByName[parsedName] === true;
+					const validName = psl.parse(domain.name).domain;
+					const valid = domain.name.length === 0 || validByName[validName] === true;
 					allValid2 = allValid2 && valid;
 					return { ...domain, hasError: !valid };
 				})
@@ -107,26 +111,20 @@ class Home extends React.Component {
 			}
 
 			// proceed to payment
+			const finalNames = getUniqueValidNames(domains2);
+			console.log('final names', finalNames);
+
 
 			this.setState({ loading: false, domainsErrorMessage: '', emailErrorMessage: '' });
 		}
 	}
 
-	_getParsedDomainNames = () => {
-		return _.chain(this.state.domains)
-			.pluck('name')
-			.filter(name => psl.isValid(name))
-			.map(name => psl.parse(name).domain)
-			.uniq()
-			.value();
-	}
-
 	render() {
-		const parsedNamesLen = this._getParsedDomainNames().length;
+		const validNamesLen = getUniqueValidNames(this.state.domains).length;
 
 		const payButtonText = this.state.loading
 			? this.state.loadingMessage
-			: `Start monitoring for ${formatPrice(parsedNamesLen * basePrice)}`;
+			: `Start monitoring for ${formatPrice(validNamesLen * basePrice)}`;
 
 		return (
 			<Card>
@@ -269,6 +267,15 @@ class Home extends React.Component {
 			</Card>
 		);
 	}
+}
+
+function getUniqueValidNames(domains) {
+	return _.chain(domains)
+		.pluck('name')
+		.filter(name => psl.isValid(name))
+		.map(name => psl.parse(name).domain)
+		.uniq()
+		.value();
 }
 
 function formatPrice(price) {

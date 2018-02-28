@@ -1,20 +1,22 @@
+import React from 'react'
+
 export default {
 	getSiteData: () => ({
 		title: 'React Static',
 	}),
 	getRoutes: async () => {
 		return [{
-				path: '/',
-				component: 'src/pages/Home',
-			},
-			{
-				path: '/about',
-				component: 'src/pages/About',
-			},
-			{
-				is404: true,
-				component: 'src/pages/404',
-			},
+			path: '/',
+			component: 'src/pages/Home',
+		},
+		{
+			path: '/about',
+			component: 'src/pages/About',
+		},
+		{
+			is404: true,
+			component: 'src/pages/404',
+		},
 		]
 	},
 	devServer: {
@@ -27,4 +29,14 @@ export default {
 			},
 		},
 	},
+	Document: ({ Html, Head, Body, children, siteData, renderMeta }) => (
+		<Html lang="en-US">
+			<Head>
+				<meta charSet="UTF-8" />
+				<meta name="viewport" content="width=device-width, initial-scale=1" />
+				<script src="https://cdn.paddle.com/paddle/paddle.js"></script>
+			</Head>
+			<Body>{children}</Body>
+		</Html>
+	),
 }
