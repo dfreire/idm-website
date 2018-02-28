@@ -22,13 +22,13 @@ class Home extends React.Component {
 	_onClickAddDomain = () => {
 		const domains = [...this.state.domains];
 		domains.unshift({ ...emptyDomain });
-		this.setState({ domains });
+		this.setState({ domains, domainsErrorMessage: '' });
 	}
 
 	_onClickRemoveDomain = (i) => {
 		const domains = [...this.state.domains];
 		domains.splice(i, 1);
-		this.setState({ domains });
+		this.setState({ domains, domainsErrorMessage: '' });
 	}
 
 	_onChangeDomainName = (i, name) => {
@@ -36,16 +36,17 @@ class Home extends React.Component {
 		const domains = [...this.state.domains];
 		domains[i].name = name;
 		domains[i].hasError = !valid;
-		this.setState({ domains });
+		this.setState({ domains, domainsErrorMessage: '' });
 	}
 
 	_onChangeEmail = (email) => {
-		this.setState({ email });
+		this.setState({ email, emailErrorMessage: '' });
 	}
 
 	_onClickPay = async () => {
 		if (!this.state.loading) {
 			this.setState({ loading: true, loadingMessage: 'Validating...', domainsErrorMessage: '', emailErrorMessage: '' });
+			let continueToServer = true;
 
 			// validate domains client-side
 			const parsedNames = this._getParsedDomainNames();
@@ -63,16 +64,20 @@ class Home extends React.Component {
 
 			if (parsedNames.length === 0) {
 				this.setState({ loading: false, domains: domains1, domainsErrorMessage: 'There are no valid domains in the list' });
-				return;
+				continueToServer = false;
 			}
 			if (!allValid1) {
 				this.setState({ loading: false, domains: domains1, domainsErrorMessage: 'There are invalid domains in the list' });
-				return;
+				continueToServer = false;
 			}
 
 			// validate email
 			if (!validateEmail(this.state.email)) {
 				this.setState({ loading: false, emailErrorMessage: 'Please provide a valid email address' });
+				continueToServer = false;
+			}
+
+			if (!continueToServer) {
 				return;
 			}
 
@@ -138,7 +143,7 @@ class Home extends React.Component {
 
 				<br />
 				<h2>Domain names</h2>
-				<p>Don't worry, we will check if the domains are valid before you pay</p>
+				<p style={{ fontSize: '0.9em' }}>Don't worry, we will validate the domains and remove repetitions before you pay</p>
 				<Form>
 					{this.state.domains.map((domain, i) => (
 						<Form.Item
@@ -182,7 +187,7 @@ class Home extends React.Component {
 					))}
 				</Form>
 
-				<p style={{ color: 'red' }}>{this.state.domainsErrorMessage}</p>
+				<p style={{ color: 'red', fontSize: '0.9em' }}>{this.state.domainsErrorMessage}</p>
 
 				<br />
 				<h2>Your Email</h2>
@@ -203,8 +208,9 @@ class Home extends React.Component {
 					</Form.Item>
 				</Form>
 
-				<p style={{ color: 'red' }}>{this.state.emailErrorMessage}</p>
+				<p style={{ color: 'red', fontSize: '0.9em' }}>{this.state.emailErrorMessage}</p>
 
+				<br />
 				<Row gutter={24}>
 					<Col span={11}>
 						<Button
