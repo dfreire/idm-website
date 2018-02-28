@@ -1,34 +1,33 @@
 import _ from 'underscore'
+import numeral from 'numeral';
 import React from 'react'
 import { withSiteData } from 'react-static'
 import { Card, Form, Row, Col, Input, Button, Alert } from 'antd'
 import psl from 'psl'
 
-const basePrice = 1.25;
+const basePrice = 1.50;
 const currency = '$';
+const priceFormatStr = `${currency}0.00`;
 
 class Home extends React.Component {
 	state = getInitialState();
 
 	componentWillMount() {
 		Paddle.Setup({ vendor: 21790 });
-		Paddle.Product.Prices(525713, function (prices) {
-			console.log('prices', prices);
-
-			// 185.101.177.56
-		});
 	}
 
 	_onClickAddDomain = () => {
 		const domains = [...this.state.domains];
 		domains.unshift(getEmptyDomain());
 		this.setState({ domains, domainsErrorMessage: '' });
+		localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onClickRemoveDomain = (i) => {
 		const domains = [...this.state.domains];
 		domains.splice(i, 1);
 		this.setState({ domains, domainsErrorMessage: '' });
+		localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeDomainName = (i, name) => {
@@ -37,20 +36,21 @@ class Home extends React.Component {
 		domains[i].name = name;
 		domains[i].hasError = !valid;
 		this.setState({ domains, domainsErrorMessage: '' });
+		localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeEmail = (email) => {
 		this.setState({ email, emailErrorMessage: '' });
+		localStorage.setItem('email', JSON.stringify(email));
 	}
 
 	_onClickPay = async () => {
 		if (!this.state.loading) {
-			this.setState({ loading: true, loadingMessage: 'Validating...', domainsErrorMessage: '', emailErrorMessage: '' });
+			this.setState({ loading: true, domainsErrorMessage: '', emailErrorMessage: '' });
 			let continueToServer = true;
 
 			// validate domains client-side
 			const validNames = getUniqueValidNames(this.state.domains);
-			console.log('valid validNames', validNames);
 
 			let allValid1 = true;
 			const domains1 = _.chain(this.state.domains)
@@ -82,14 +82,13 @@ class Home extends React.Component {
 			}
 
 			// validate domains server-side
-			const response = await fetch('/api/whois', {
+			const response = await fetch('/api/validate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ names: validNames }),
 			}).then(response => response.json());
 
 			const validByName = response.result || {};
-			console.log('validByName', validByName);
 
 			let allValid2 = true;
 			const domains2 = _.chain(this.state.domains)
@@ -106,20 +105,45 @@ class Home extends React.Component {
 				return;
 			}
 
-			// proceed to payment
 			const email = this.state.email;
-			const finalNames = getUniqueValidNames(domains2);
-			console.log('final names', finalNames);
-			Paddle.Checkout.open({
-				product: 525713,
-				quantity: finalNames.length,
-				email,
-				successCallback: () => {
-				},
-				closeCallback: () => {
+			const response2 = await fetch('/api/unmonitored', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ names: getUniqueValidNames(domains2), email }),
+			}).then(response => response.json());
+			console.log('response2', response2);
+			const unmonitored = response2.unmonitored;
+
+			if (unmonitored.length === 0) {
+				this.setState({ loading: false, domains: domains2, emailErrorMessage: 'All the listed domains are already being monitored by this email' });
+				return;
+			}
+			
+			// proceed to payment
+			const passthrough = uuidv4();
+			// Paddle.Checkout.open({
+				// 	product: 525713,
+				// 	quantity: unmonitored.length,
+				// 	email,
+				// 	passthrough,
+				// 	successCallback: (data) => {
+					const response3 = await fetch('/api/checkout', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ names: unmonitored, email, checkout_id: passthrough, paddle_response: JSON.stringify({}) }),
+					}).then(response => response.json());
+					console.log('response3', response3);
+
+					/*
+					const data = window['paddle_data'];
+					console.log('successCallback data', JSON.stringify(data));
+					localStorage.clear();
 					this.setState({ ...getInitialState(), showSuccessMessage: true, email });
-				},
-			});
+					*/
+			// 	},
+			// 	closeCallback: () => {
+			// 	},
+			// });
 
 			this.setState({ loading: false, domainsErrorMessage: '', emailErrorMessage: '' });
 		}
@@ -128,14 +152,10 @@ class Home extends React.Component {
 	render() {
 		const validNamesLen = getUniqueValidNames(this.state.domains).length;
 
-		const payButtonText = this.state.loading
-			? this.state.loadingMessage
-			: `Start monitoring for ${formatPrice(validNamesLen * basePrice)}`;
-
 		return (
 			<Card>
 				<h1>Instant Domain Monitor</h1>
-				<p>Start monitoring the expiration date of any domain name, instantly</p>
+				<p>Start monitoring the expiration date of any domain name</p>
 
 				<br />
 				<h2>How it works</h2>
@@ -224,7 +244,7 @@ class Home extends React.Component {
 							onClick={this._onClickPay}
 							loading={this.state.loading}
 						>
-							{payButtonText}
+							Start monitoring for {formatPrice(validNamesLen * basePrice)}
 						</Button>
 					</Col>
 					<Col span={11}>
@@ -234,7 +254,7 @@ class Home extends React.Component {
 							size="large"
 							disabled={this.state.loading}
 						>
-							Or give us your honest feedback
+							Or give us your feedback
 						</Button>
 					</Col>
 				</Row>
@@ -265,7 +285,7 @@ class Home extends React.Component {
 					<br />
 					<h3>Can I add more domains later?</h3>
 					<p>Yes, you can simply create a new list and use the same email address as before. We will consolidate all your domain names and deliver a single weekly report.</p>
-					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we will not charge it twice.</p>
+					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically detect duplicates and not charge twice.</p>
 
 					<br />
 					<h3>Can I remove domains from my report?</h3>
@@ -288,11 +308,12 @@ class Home extends React.Component {
 }
 
 function getInitialState() {
+	const domains = JSON.parse(localStorage.getItem('domains')) || [getEmptyDomain()];
+	const email = JSON.parse(localStorage.getItem('email')) || '';
 	return {
-		domains: [getEmptyDomain()],
-		email: '',
+		domains,
+		email,
 		loading: false,
-		loadingMessage: '',
 		domainsErrorMessage: '',
 		emailErrorMessage: '',
 		showSuccessMessage: false,
@@ -313,12 +334,29 @@ function getUniqueValidNames(domains) {
 }
 
 function formatPrice(price) {
-	return `${currency}${price}`;
+	const priceStr = numeral(price).format(priceFormatStr);
+	const tokens = priceStr.split('.');
+	return (
+		<span>
+			<span>{tokens[0]}</span>
+			<span>.</span>
+			<span style={{ fontSize: '0.9em' }}>{tokens[1]}</span>
+		</span>
+	);
 }
 
 function validateEmail(email) {
 	var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 	return re.test(String(email).toLowerCase());
 }
+
+export function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c: any) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 
 export default withSiteData(Home)
