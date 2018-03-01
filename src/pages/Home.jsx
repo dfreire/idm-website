@@ -63,14 +63,30 @@ class Home extends React.Component {
 	}
 
 	_renderDomainList() {
+		console.log('this.state.domains.length', this.state.domains.length);
 		return (
 			<div>
 				<br />
-				<h2>Domain names</h2>
+				<Row type="flex" align="bottom">
+					<Col span={22}>
+						<h2>Domain names</h2>
+					</Col>
+					<Col span={2}>
+						<Button
+							style={{ margin: 5 }}
+							type="primary"
+							size="small"
+							shape="circle"
+							icon="plus"
+							onClick={this._onClickAddDomain}
+							disabled={this.state.loading}
+						/>
+					</Col>
+				</Row>
 				<Form>
 					{this.state.domains.map((domain, i) => {
 						return (
-							<Row key={i} align="top">
+							<Row key={i}>
 								<Col span={22}>
 									<Form.Item
 										style={{ marginBottom: 1 }}
@@ -90,26 +106,15 @@ class Home extends React.Component {
 									</Form.Item>
 								</Col>
 								<Col span={2} style={{ marginTop: 8 }}>
-									{i === 0
-										? <Button
-											style={{ marginLeft: 5 }}
-											type="primary"
-											size="small"
-											shape="circle"
-											icon="plus"
-											onClick={this._onClickAddDomain}
-											disabled={this.state.loading}
-										/>
-										: <Button
-											style={{ marginLeft: 5 }}
-											type="danger"
-											size="small"
-											shape="circle"
-											icon="minus"
-											onClick={() => this._onClickRemoveDomain(i)}
-											disabled={this.state.loading}
-										/>
-									}
+									<Button
+										style={{ marginLeft: 5 }}
+										type="danger"
+										size="small"
+										shape="circle"
+										icon="minus"
+										onClick={() => this._onClickRemoveDomain(i)}
+										disabled={this.state.domains.length === 1 || this.state.loading}
+									/>
 								</Col>
 							</Row>
 						);
@@ -243,7 +248,7 @@ class Home extends React.Component {
 
 	_onClickAddDomain = () => {
 		const domains = [...this.state.domains];
-		domains.unshift(createEmptyDomain());
+		domains.push(createEmptyDomain());
 		this.setState({ domains });
 		localStorage.setItem('domains', JSON.stringify(domains));
 	}
@@ -269,8 +274,6 @@ class Home extends React.Component {
 		} else {
 			domains[i].helpMessage = '';
 		}
-
-		console.log('domain', domains[i]);
 
 		this.setState({ domains });
 		localStorage.setItem('domains', JSON.stringify(domains));
@@ -389,7 +392,7 @@ class Home extends React.Component {
 
 function createInitialState() {
 	const emptyDomains = [];
-	for (let i = 0; i < 5; i++) {
+	for (let i = 0; i < 3; i++) {
 		emptyDomains.push(createEmptyDomain());
 	}
 
