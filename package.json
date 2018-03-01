@@ -10,7 +10,6 @@
     "serve": "serve dist -p 3000"
   },
   "dependencies": {
-    "@types/underscore": "^1.8.7",
     "antd": "^3.2.2",
     "axios": "^0.16.2",
     "numeral": "^2.0.6",
@@ -24,6 +23,7 @@
   },
   "devDependencies": {
     "@types/numeral": "0.0.22",
+    "@types/underscore": "^1.8.7",
     "eslint-config-react-tools": "1.x.x",
     "serve": "^6.1.0"
   }

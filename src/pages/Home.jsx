@@ -5,6 +5,9 @@ import { withSiteData } from 'react-static'
 import { Card, Form, Row, Col, Input, Button, Modal, notification, message } from 'antd'
 import psl from 'psl'
 
+const VERSION = 1;
+const inBrowser = typeof document !== 'undefined';
+
 const currency = '$';
 const basePrice = 1.50;
 const priceFormat = `${currency}0.00`;
@@ -13,17 +16,19 @@ class Home extends React.Component {
 	state = createInitialState();
 
 	componentWillMount() {
-		Paddle.Setup({ vendor: 21790 });
+		if (inBrowser) {
+			Paddle.Setup({ vendor: 21790 });
 
-		const now = Date.now();
-		const savedAt = JSON.parse(localStorage.getItem('savedAt')) || 0;
-		const oneHour = 60 * 60 * 1000;
-
-		if ((now - savedAt) > oneHour) {
-			localStorage.clear();
+			const version = JSON.parse(localStorage.getItem('version')) || 0;
+			if (version === VERSION) {
+				const domains = JSON.parse(localStorage.getItem('domains')) || [createEmptyDomain()];
+				const email = JSON.parse(localStorage.getItem('email')) || '';
+				this.setState({ ...createInitialState(), domains, email });
+			} else {
+				localStorage.clear();
+				localStorage.setItem('version', JSON.stringify(VERSION));
+			}
 		}
-
-		// localStorage.setItem('savedAt', JSON.stringify(now));
 	}
 
 	render() {
@@ -64,7 +69,7 @@ class Home extends React.Component {
 	}
 
 	_renderDomainList() {
-		return (
+		return !this.state.bulkModalVisible && (
 			<div>
 				<br />
 				<Row type="flex" align="bottom">
@@ -78,7 +83,10 @@ class Home extends React.Component {
 							size="small"
 							shape="circle"
 							icon="form"
-							onClick={() => this.setState({ showBulkModal: true, bulkModalLines: this._getValidNames().sort((a, b) => a.localeCompare(b)).join('\n') })}
+							onClick={() => this.setState({
+								bulkModalVisible: true,
+								bulkModalLines: this._getValidNames().sort((a, b) => a.localeCompare(b)).join('\n'),
+							})}
 							disabled={this.state.loading}
 						/>
 						<Button
@@ -94,15 +102,29 @@ class Home extends React.Component {
 				</Row>
 				<Form>
 					{this.state.domains.map((domain, i) => {
+						let helpText, validateStatus = '';
+						switch (domain.status) {
+							case STATUS.VALID:
+								helpText = domain.name !== domain.validName ? `Same as ${domain.validName}` : undefined;
+								break;
+							case STATUS.INVALID:
+								validateStatus = 'error';
+								break;
+							case STATUS.MONITORED:
+								helpText = domain.monitoredByEmail === this.state.email ? `This domain is already being monitored by ${this.state.email}` : undefined;
+								validateStatus = domain.monitoredByEmail === this.state.email ? 'error' : '';
+								break;
+						}
+
 						return (
 							<Row key={i}>
 								<Col span={22}>
 									<Form.Item
 										style={{ marginBottom: 1 }}
-										validateStatus={domain.hasError ? 'error' : 'success'}
-										help={domain.helpMessage.length > 0 &&
+										validateStatus={validateStatus}
+										help={helpText != null &&
 											<p style={{ marginLeft: 12, marginTop: 2, marginBottom: 5, fontSize: '0.9em' }}>
-												{domain.helpMessage}
+												{helpText}
 											</p>
 										}
 									>
@@ -244,19 +266,23 @@ class Home extends React.Component {
 		return (
 			<Modal
 				title="Edit the domain names here"
-				visible={this.state.showBulkModal}
+				visible={this.state.bulkModalVisible}
 				maskClosable={false}
+				onCancel={() => this.setState({ bulkModalVisible: false, bulkModalLines: '' })}
 				onOk={() => {
 					const domains = this.state.bulkModalLines.split('\n')
 						.map(name => name.trim())
 						.filter(name => name.length > 0)
 						.sort((a, b) => a.localeCompare(b))
-						.map((name, i) => this._getUpdatedDomain(i, name));
+						.map(name => createDomain(name));
 
-					this.setState({ domains, showBulkModal: false, bulkModalLines: '' });
-					// localStorage.setItem('domains', JSON.stringify(domains));
+					if (domains.length === 0) {
+						domains.push(createEmptyDomain());
+					}
+
+					this.setState({ domains, bulkModalVisible: false, bulkModalLines: '' });
+					inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 				}}
-				onCancel={() => this.setState({ showBulkModal: false, bulkModalLines: '' })}
 			>
 				<p>Write each domain name in a separate line:</p>
 				<Input.TextArea
@@ -269,72 +295,50 @@ class Home extends React.Component {
 	}
 
 	_onClickAddDomain = () => {
-		const domains = [...this.state.domains];
-		domains.push(createEmptyDomain());
+		const domains = [
+			...this.state.domains,
+			createEmptyDomain()
+		];
 		this.setState({ domains });
-		// localStorage.setItem('domains', JSON.stringify(domains));
+		inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onClickRemoveDomain = (i) => {
-		const domains = [...this.state.domains];
-		domains.splice(i, 1);
+		const domains = [
+			...this.state.domains.slice(0, i),
+			...this.state.domains.slice(i + 1),
+		];
 		this.setState({ domains });
-		// localStorage.setItem('domains', JSON.stringify(domains));
+		inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeDomainName = (i, name) => {
-		const domain = this._getUpdatedDomain(i, name);
-		const domains = [...this.state.domains];
-		domains[i] = domain;
+		const domains = [
+			...this.state.domains.slice(0, i),
+			createDomain(name),
+			...this.state.domains.slice(i + 1),
+		];
 		this.setState({ domains });
-		// localStorage.setItem('domains', JSON.stringify(domains));
+		inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeEmail = (email) => {
 		const emailHasError = email.length > 0 && !validateEmail(email);
-		const domains = this.state.domains.map((domain, i) => this._getUpdatedDomain(i, domain.name));
-		this.setState({ email, emailHasError, domains });
-		// localStorage.setItem('email', JSON.stringify(email));
-	}
-
-	_getUpdatedDomain = (i, name) => {
-		const domain = { ...this.state.domains[i] };
-		domain.name = name;
-
-		if (name.length === 0) {
-			domain.hasError = false;
-			domain.validName = '';
-			domain.helpMessage = '';
-
-		} else if (psl.isValid(name)) {
-			const validName = psl.parse(name).domain;
-			domain.hasError = false;
-			domain.validName = validName;
-			domain.helpMessage = name !== validName ? `Same as: ${validName}` : '';
-
-		} else {
-			domain.hasError = true;
-			domain.validName = '';
-			domain.helpMessage = '';
-		}
-
-		return domain;
+		this.setState({ email, emailHasError });
+		inBrowser && localStorage.setItem('email', JSON.stringify(email));
 	}
 
 	_getValidNames = () => {
-		return _.chain(this.state.domains)
-			.pluck('name')
-			.filter(name => psl.isValid(name))
-			.map(name => psl.parse(name).domain)
-			.uniq()
-			.value();
-	}
-
-	_onClickBulk = () => {
-
+		const map = _.indexBy(this.state.domains, 'validName');
+		delete map[''];
+		return Object.keys(map);
 	}
 
 	_onClickPay = async () => {
+		if (!inBrowser) {
+			return;
+		};
+
 		if (this.state.email.length === 0 || this.state.emailHasError) {
 			notifyProblem('Problem', 'Please fix the problems in order to proceed');
 			this.setState({ emailHasError: true });
@@ -342,7 +346,7 @@ class Home extends React.Component {
 		}
 
 		for (let domain of this.state.domains) {
-			if (domain.hasError) {
+			if (domain.status === STATUS.INVALID || (domain.status === STATUS.MONITORED && domain.monitoredByEmail === this.state.email)) {
 				notifyProblem('Problem', 'Please fix the problems in order to proceed');
 				return;
 			}
@@ -355,12 +359,6 @@ class Home extends React.Component {
 		}
 
 		this.setState({ loading: true });
-
-		async function wait(t) {
-			return new Promise(resolve => {
-				setTimeout(resolve, t);
-			});
-		}
 
 		const hide = message.loading('This may take a while, please be patient...', 0);
 		const precheckoutResponse = await fetch('/api/precheckout', {
@@ -386,13 +384,11 @@ class Home extends React.Component {
 		for (let domain of domains) {
 			if (domain.validName.length > 0) {
 				if (resultByName[domain.validName] === 'invalid') {
-					domain.hasError = true;
-					domain.helpMessage = 'Domain not supported';
+					domain.status = STATUS.INVALID;
 					hasError = true;
-
 				} else if (resultByName[domain.validName] === 'monitored') {
-					domain.hasError = true;
-					domain.helpMessage = `Domain already monitored by: ${this.state.email}`;
+					domain.status = STATUS.MONITORED;
+					domain.monitoredByEmail = this.state.email;
 					hasError = true;
 				}
 			}
@@ -431,33 +427,60 @@ class Home extends React.Component {
 		// }
 		// });
 
-		localStorage.clear();
 		notifySuccess('Thank you for using our service!', `You will receive weekly reports at ${this.state.email}`);
-		this.setState({ ...createInitialState(), email: this.state.email });
+		this.setState(createInitialState());
+		localStorage.clear();
+		window.scrollTo(0, 0);
 	}
 }
 
 function createInitialState() {
-	const emptyDomains = [];
-	for (let i = 0; i < 3; i++) {
-		emptyDomains.push(createEmptyDomain());
-	}
-
-	const domains = JSON.parse(localStorage.getItem('domains')) || emptyDomains;
-	const email = JSON.parse(localStorage.getItem('email')) || '';
-
 	return {
-		domains,
-		email,
-		emailHasError: false,
 		loading: false,
-		showBulkModal: false,
+		domains: [createEmptyDomain()],
+		email: '',
+		emailHasError: false,
+		bulkModalVisible: false,
 		bulkModalLines: '',
 	};
 }
 
+const STATUS = {
+	EMPTY: 0,
+	VALID: 1,
+	INVALID: 2,
+	MONITORED: 3,
+}
+
 function createEmptyDomain() {
-	return { name: '', validName: '', helpMessage: '', hasError: false };
+	return { name: '', validName: '', status: STATUS.EMPTY, monitoredByEmail: '' };
+}
+
+function createDomain(name) {
+	const domain = {
+		name: name,
+		monitoredByEmail: '',
+	};
+
+	if (name.length === 0) {
+		domain.validName = '';
+		domain.status = STATUS.EMPTY;
+
+	} else {
+		const validName = psl.parse(name).domain;
+
+		if (validName) {
+			domain.validName = validName;
+			domain.status = STATUS.VALID;
+
+		} else {
+			domain.validName = '';
+			domain.status = STATUS.INVALID;
+
+		}
+	}
+
+	return domain;
 }
 
 function formatPrice(price) {
