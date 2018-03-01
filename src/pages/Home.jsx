@@ -173,7 +173,7 @@ class Home extends React.Component {
 	}
 
 	_renderPayButton() {
-		const validNamesLen = extractValidNames(this.state.domains).length;
+		const validNames = this._getValidNames();
 
 		return (
 			<Button
@@ -183,7 +183,7 @@ class Home extends React.Component {
 				onClick={this._onClickPay}
 				loading={this.state.loading}
 			>
-				Start monitoring for {formatPrice(validNamesLen * basePrice)}
+				Start monitoring for {formatPrice(validNames.length * basePrice)}
 			</Button>
 		);
 	}
@@ -290,9 +290,10 @@ class Home extends React.Component {
 			domain.helpMessage = '';
 
 		} else if (psl.isValid(name)) {
+			const validName = psl.parse(name).domain;
 			domain.hasError = false;
-			domain.validName = psl.parse(name).domain;
-			domain.helpMessage = domain.name !== domain.validName ? `Same as: ${validName}` : '';
+			domain.validName = validName;
+			domain.helpMessage = name !== validName ? `Same as: ${validName}` : '';
 
 		} else {
 			domain.hasError = true;
@@ -303,9 +304,16 @@ class Home extends React.Component {
 		return domain;
 	}
 
-	_onClickPay = async () => {
-		console.log('state', this.state);
+	_getValidNames = () => {
+		return _.chain(this.state.domains)
+			.pluck('name')
+			.filter(name => psl.isValid(name))
+			.map(name => psl.parse(name).domain)
+			.uniq()
+			.value();
+	}
 
+	_onClickPay = async () => {
 		if (this.state.email.length === 0 && this.state.emailHasError) {
 			message.error('Please fix the errors in order to proceed');
 			this.setState({ emailHasError: true });
@@ -319,7 +327,7 @@ class Home extends React.Component {
 			}
 		}
 
-		const validNames = extractValidNames(this.state.domains);
+		const validNames = this._getValidNames();
 		if (validNames.length === 0) {
 			message.error('Please insert some domains');
 			return;
@@ -361,7 +369,6 @@ class Home extends React.Component {
 				email: this.state.email,
 			}),
 		}).then(response => response.json());
-		console.log('monitoredResponse', monitoredResponse);
 		const monitoredNames = monitoredResponse.result || [];
 
 		hasError = false;
@@ -399,7 +406,6 @@ class Home extends React.Component {
 				paddle_response: JSON.stringify({})
 			}),
 		}).then(response => response.json());
-		console.log('checkoutResponse', checkoutResponse);
 
 		message.success('Thank you for using our service. You will receive a weekly report by email!');
 		this.setState({ loading: false });
@@ -426,15 +432,6 @@ function createInitialState() {
 
 function createEmptyDomain() {
 	return { name: '', validName: '', helpMessage: '', hasError: false };
-}
-
-function extractValidNames(domains) {
-	return _.chain(domains)
-		.pluck('name')
-		.filter(name => psl.isValid(name))
-		.map(name => psl.parse(name).domain)
-		.uniq()
-		.value();
 }
 
 function formatPrice(price) {
