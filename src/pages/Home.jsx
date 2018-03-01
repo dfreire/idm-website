@@ -2,7 +2,7 @@ import _ from 'underscore'
 import numeral from 'numeral';
 import React from 'react'
 import { withSiteData } from 'react-static'
-import { Card, Form, Row, Col, Input, Button, Alert } from 'antd'
+import { Card, Form, Row, Col, Input, Button, Alert, message } from 'antd'
 import psl from 'psl'
 
 const currency = '$';
@@ -266,133 +266,144 @@ class Home extends React.Component {
 	}
 
 	_onChangeDomainName = (i, name) => {
-		const valid = name.length === 0 || psl.isValid(name);
-		const validName = valid ? psl.parse(name).domain : '';
-
+		const domain = this._getUpdatedDomain(i, name);
 		const domains = [...this.state.domains];
-		domains[i].name = name;
-		domains[i].validName = validName;
-		domains[i].hasError = !valid;
-
-		if (valid) {
-			domains[i].helpMessage = name.length > 0 && name !== validName ? `Same as: ${validName}` : '';
-		} else {
-			domains[i].helpMessage = '';
-		}
-
+		domains[i] = domain;
 		this.setState({ domains });
 		localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeEmail = (email) => {
 		const emailHasError = email.length > 0 && !validateEmail(email);
-		this.setState({ email, emailHasError });
+		const domains = this.state.domains.map((domain, i) => this._getUpdatedDomain(i, domain.name));
+		this.setState({ email, emailHasError, domains });
 		localStorage.setItem('email', JSON.stringify(email));
 	}
 
-	_onClickPay = async () => {
-		if (!this.state.loading) {
-			this.setState({ loading: true, domainsErrorMessage: '', emailHasError: '' });
-			let continueToServer = true;
+	_getUpdatedDomain = (i, name) => {
+		const domain = { ...this.state.domains[i] };
+		domain.name = name;
 
-			// validate domains client-side
-			const validNames = extractValidNames(this.state.domains);
+		if (name.length === 0) {
+			domain.hasError = false;
+			domain.validName = '';
+			domain.helpMessage = '';
 
-			let allValid1 = true;
-			const domains1 = _.chain(this.state.domains)
-				.map(domain => {
-					const validName = psl.parse(domain.name).domain;
-					const valid = domain.name.length === 0 || validNames.indexOf(validName) >= 0;
-					allValid1 = allValid1 && valid;
-					return { ...domain, hasError: !valid };
-				})
-				.value();
+		} else if (psl.isValid(name)) {
+			domain.hasError = false;
+			domain.validName = psl.parse(name).domain;
+			domain.helpMessage = domain.name !== domain.validName ? `Same as: ${validName}` : '';
 
-			if (validNames.length === 0) {
-				this.setState({ loading: false, domains: domains1, domainsErrorMessage: 'There are no valid domains in the list' });
-				continueToServer = false;
-			}
-			if (!allValid1) {
-				this.setState({ loading: false, domains: domains1, domainsErrorMessage: 'There are invalid domains in the list' });
-				continueToServer = false;
-			}
-
-			// validate email
-			if (!validateEmail(this.state.email)) {
-				this.setState({ loading: false, emailHasError: 'Please provide a valid email address' });
-				continueToServer = false;
-			}
-
-			if (!continueToServer) {
-				return;
-			}
-
-			// validate domains server-side
-			const response = await fetch('/api/validate', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ names: validNames }),
-			}).then(response => response.json());
-
-			const validByName = response.result || {};
-
-			let allValid2 = true;
-			const domains2 = _.chain(this.state.domains)
-				.map(domain => {
-					const validName = psl.parse(domain.name).domain;
-					const valid = domain.name.length === 0 || validByName[validName] === true;
-					allValid2 = allValid2 && valid;
-					return { ...domain, hasError: !valid };
-				})
-				.value();
-
-			if (!allValid2) {
-				this.setState({ loading: false, domains: domains2, domainsErrorMessage: 'There are invalid domains in the list' })
-				return;
-			}
-
-			const email = this.state.email;
-			const response2 = await fetch('/api/unmonitored', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ names: extractValidNames(domains2), email }),
-			}).then(response => response.json());
-			console.log('response2', response2);
-			const unmonitored = response2.unmonitored;
-
-			if (unmonitored.length === 0) {
-				this.setState({ loading: false, domains: domains2, emailHasError: 'All the listed domains are already being monitored by this email' });
-				return;
-			}
-
-			// proceed to payment
-			const passthrough = uuidv4();
-			// Paddle.Checkout.open({
-			// 	product: 525713,
-			// 	quantity: unmonitored.length,
-			// 	email,
-			// 	passthrough,
-			// 	successCallback: (data) => {
-			const response3 = await fetch('/api/checkout', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ names: unmonitored, email, checkout_id: passthrough, paddle_response: JSON.stringify({}) }),
-			}).then(response => response.json());
-			console.log('response3', response3);
-
-			/*
-			const data = window['paddle_data'];
-			console.log('successCallback data', JSON.stringify(data));
-			localStorage.clear();
-			this.setState({ ...createInitialState(), showSuccessMessage: true, email });
-			*/
-			// 	},
-			// 	closeCallback: () => {
-			// 	},
-			// });
-
-			this.setState({ loading: false, domainsErrorMessage: '', emailHasError: '' });
+		} else {
+			domain.hasError = true;
+			domain.validName = '';
+			domain.helpMessage = '';
 		}
+
+		return domain;
+	}
+
+	_onClickPay = async () => {
+		console.log('state', this.state);
+
+		if (this.state.email.length === 0 && this.state.emailHasError) {
+			message.error('Please fix the errors in order to proceed');
+			this.setState({ emailHasError: true });
+			return;
+		}
+
+		for (let domain of this.state.domains) {
+			if (domain.hasError) {
+				message.error('Please fix the errors in order to proceed');
+				return;
+			}
+		}
+
+		const validNames = extractValidNames(this.state.domains);
+		if (validNames.length === 0) {
+			message.error('Please insert some domains');
+			return;
+		}
+
+		this.setState({ loading: true });
+
+		const validateResponse = await fetch('/api/validate', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				names: validNames
+			}),
+		}).then(response => response.json());
+
+		const validByName = validateResponse.result || {};
+
+		let hasError = false;
+		let domains = [...this.state.domains];
+		for (let domain of domains) {
+			if (domain.validName.length > 0 && validByName[domain.validName] !== true) {
+				domain.hasError = true;
+				domain.helpMessage = 'Domain not supported';
+				hasError = true;
+			}
+		}
+
+		if (hasError) {
+			message.error('Please fix the errors in order to proceed');
+			this.setState({ loading: false, domains });
+			return;
+		}
+
+		const monitoredResponse = await fetch('/api/monitored', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				names: validNames,
+				email: this.state.email,
+			}),
+		}).then(response => response.json());
+		console.log('monitoredResponse', monitoredResponse);
+		const monitoredNames = monitoredResponse.result || [];
+
+		hasError = false;
+		domains = [...this.state.domains];
+		for (let domain of domains) {
+			if (domain.validName.length > 0 && monitoredNames.indexOf(domain.validName) >= 0) {
+				domain.hasError = true;
+				domain.helpMessage = `Domain already monitored by: ${this.state.email}`;
+				hasError = true;
+			}
+		}
+
+		if (hasError) {
+			message.error('Please fix the errors in order to proceed');
+			this.setState({ loading: false, domains });
+			return;
+		}
+
+		const monitorNames = _.difference(validNames, monitoredNames);
+		const checkout_id = uuidv4();
+
+		// Paddle.Checkout.open({
+		// 	product: 525713,
+		// 	quantity: monitorNames.length,
+		// 	email,
+		// 	passthrough: checkout_id,
+		// 	successCallback: (data) => {
+		const checkoutResponse = await fetch('/api/checkout', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				names: monitorNames,
+				email: this.state.email,
+				checkout_id: checkout_id,
+				paddle_response: JSON.stringify({})
+			}),
+		}).then(response => response.json());
+		console.log('checkoutResponse', checkoutResponse);
+
+		message.success('Thank you for using our service. You will receive a weekly report by email!');
+		this.setState({ loading: false });
+		// localStorage.clear();
 	}
 }
 
