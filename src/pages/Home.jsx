@@ -2,7 +2,7 @@ import _ from 'underscore'
 import numeral from 'numeral';
 import React from 'react'
 import { withSiteData } from 'react-static'
-import { Card, Form, Row, Col, Input, Button, Alert, message } from 'antd'
+import { Card, Form, Row, Col, Input, Button, Alert, notification } from 'antd'
 import psl from 'psl'
 
 const currency = '$';
@@ -201,27 +201,6 @@ class Home extends React.Component {
 		);
 	}
 
-	_renderSuccessMessage() {
-		return this.state.showSuccessMessage && (
-			<Row gutter={24}>
-				<Col span={22}>
-					<br />
-					<Alert
-						type="success"
-						message={
-							<div>
-								<h3>Thank you for using our service</h3>
-								<p>We will start sending you weekly reports by mail</p>
-							</div>
-						}
-						closable={true}
-						onClose={() => this.setState({ showSuccessMessage: false })}
-					/>
-				</Col>
-			</Row>
-		);
-	}
-
 	_renderFAQ() {
 		return (
 			<div>
@@ -232,7 +211,7 @@ class Home extends React.Component {
 					<br />
 					<h3>Can I add more domains later?</h3>
 					<p>Yes, you can simply create a new list and use the same email address as before. We will consolidate all your domain names and deliver a single weekly report.</p>
-					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically detect duplicates and not charge twice.</p>
+					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically detect duplicates and we do not charge twice.</p>
 
 					<br />
 					<h3>Can I remove domains from my report?</h3>
@@ -243,7 +222,7 @@ class Home extends React.Component {
 					<p>You can contact <a>support</a> to do it for you.</p>
 
 					<br />
-					<h3>Which TLDs do you support?</h3>
+					<h3>Which domain extensions (TLDs) do you support?</h3>
 					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs.</p>
 					<p>We also validate all the domain names in your list before you pay, so unsupported TLDs will not be included.</p>
 				</div>
@@ -314,24 +293,22 @@ class Home extends React.Component {
 	}
 
 	_onClickPay = async () => {
-		console.log('---');
-		
-		if (this.state.email.length === 0 && this.state.emailHasError) {
-			message.error('Please fix the errors in order to proceed');
+		if (this.state.email.length === 0 || this.state.emailHasError) {
+			notifyProblem('Problem', 'Please fix the problems in order to proceed');
 			this.setState({ emailHasError: true });
 			return;
 		}
 
 		for (let domain of this.state.domains) {
 			if (domain.hasError) {
-				message.error('Please fix the errors in order to proceed');
+				notifyProblem('Problem', 'Please fix the problems in order to proceed');
 				return;
 			}
 		}
 
 		const validNames = this._getValidNames();
 		if (validNames.length === 0) {
-			message.error('Please insert some domains');
+			notifyProblem('Problem', 'Please insert some domains');
 			return;
 		}
 
@@ -345,7 +322,6 @@ class Home extends React.Component {
 				email: this.state.email,
 			}),
 		}).then(response => response.json());
-		console.log('precheckoutResponse', precheckoutResponse);
 
 		const resultByName = precheckoutResponse.result || {};
 
@@ -367,12 +343,11 @@ class Home extends React.Component {
 		}
 
 		if (hasError) {
-			message.error('Please fix the errors in order to proceed');
+			notifyProblem('Problem', 'Please fix the problems in order to proceed');
 			this.setState({ loading: false, domains });
 			return;
 		}
 
-		console.log('monitor', validNames);
 		const checkout_id = uuidv4();
 
 		// Paddle.Checkout.open({
@@ -391,11 +366,10 @@ class Home extends React.Component {
 				paddle_response: JSON.stringify({})
 			}),
 		}).then(response => response.json());
-		console.log('postcheckoutResponse', postcheckoutResponse);
 
-		message.success('Thank you for using our service. You will receive a weekly report by email!');
-		this.setState({ loading: false });
-		// localStorage.clear();
+		notifySuccess('Thank you for using our service!', `You will receive a weekly reports at ${this.state.email}`);
+		this.setState({ ...createInitialState(), email: this.state.email });
+		localStorage.clear();
 	}
 }
 
@@ -411,7 +385,7 @@ function createInitialState() {
 	return {
 		domains,
 		email,
-		emailHasError: '',
+		emailHasError: false,
 		loading: false,
 	};
 }
@@ -437,8 +411,24 @@ function validateEmail(email) {
 	return re.test(String(email).toLowerCase());
 }
 
+function notifyProblem(title, description) {
+	notification.open({
+		style: { backgroundColor: '#FDEDEC' },
+		message: title,
+		description: description,
+	});
+}
+
+function notifySuccess(title, description) {
+	notification.open({
+		style: { backgroundColor: '#EAFAF1' },
+		message: title,
+		description: description,
+	});
+}
+
 export function uuidv4() {
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c: any) {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
 		const r = Math.random() * 16 | 0;
 		const v = c === 'x' ? r : (r & 0x3 | 0x8);
 		return v.toString(16);
