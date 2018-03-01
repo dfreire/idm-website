@@ -314,6 +314,8 @@ class Home extends React.Component {
 	}
 
 	_onClickPay = async () => {
+		console.log('---');
+		
 		if (this.state.email.length === 0 && this.state.emailHasError) {
 			message.error('Please fix the errors in order to proceed');
 			this.setState({ emailHasError: true });
@@ -335,33 +337,7 @@ class Home extends React.Component {
 
 		this.setState({ loading: true });
 
-		const validateResponse = await fetch('/api/validate', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				names: validNames
-			}),
-		}).then(response => response.json());
-
-		const validByName = validateResponse.result || {};
-
-		let hasError = false;
-		let domains = [...this.state.domains];
-		for (let domain of domains) {
-			if (domain.validName.length > 0 && validByName[domain.validName] !== true) {
-				domain.hasError = true;
-				domain.helpMessage = 'Domain not supported';
-				hasError = true;
-			}
-		}
-
-		if (hasError) {
-			message.error('Please fix the errors in order to proceed');
-			this.setState({ loading: false, domains });
-			return;
-		}
-
-		const monitoredResponse = await fetch('/api/monitored', {
+		const precheckoutResponse = await fetch('/api/precheckout', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
@@ -369,15 +345,24 @@ class Home extends React.Component {
 				email: this.state.email,
 			}),
 		}).then(response => response.json());
-		const monitoredNames = monitoredResponse.result || [];
+		console.log('precheckoutResponse', precheckoutResponse);
 
-		hasError = false;
-		domains = [...this.state.domains];
+		const resultByName = precheckoutResponse.result || {};
+
+		let hasError = false;
+		const domains = [...this.state.domains];
 		for (let domain of domains) {
-			if (domain.validName.length > 0 && monitoredNames.indexOf(domain.validName) >= 0) {
-				domain.hasError = true;
-				domain.helpMessage = `Domain already monitored by: ${this.state.email}`;
-				hasError = true;
+			if (domain.validName.length > 0) {
+				if (resultByName[domain.validName] === 'invalid') {
+					domain.hasError = true;
+					domain.helpMessage = 'Domain not supported';
+					hasError = true;
+
+				} else if (resultByName[domain.validName] === 'monitored') {
+					domain.hasError = true;
+					domain.helpMessage = `Domain already monitored by: ${this.state.email}`;
+					hasError = true;
+				}
 			}
 		}
 
@@ -387,7 +372,7 @@ class Home extends React.Component {
 			return;
 		}
 
-		const monitorNames = _.difference(validNames, monitoredNames);
+		console.log('monitor', validNames);
 		const checkout_id = uuidv4();
 
 		// Paddle.Checkout.open({
@@ -396,16 +381,17 @@ class Home extends React.Component {
 		// 	email,
 		// 	passthrough: checkout_id,
 		// 	successCallback: (data) => {
-		const checkoutResponse = await fetch('/api/checkout', {
+		const postcheckoutResponse = await fetch('/api/postcheckout', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
-				names: monitorNames,
+				names: validNames,
 				email: this.state.email,
 				checkout_id: checkout_id,
 				paddle_response: JSON.stringify({})
 			}),
 		}).then(response => response.json());
+		console.log('postcheckoutResponse', postcheckoutResponse);
 
 		message.success('Thank you for using our service. You will receive a weekly report by email!');
 		this.setState({ loading: false });
