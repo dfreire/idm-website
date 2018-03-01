@@ -2,7 +2,7 @@ import _ from 'underscore'
 import numeral from 'numeral';
 import React from 'react'
 import { withSiteData } from 'react-static'
-import { Card, Form, Row, Col, Input, Button, Alert, notification } from 'antd'
+import { Card, Form, Row, Col, Input, Button, Modal, notification, message } from 'antd'
 import psl from 'psl'
 
 const currency = '$';
@@ -23,7 +23,7 @@ class Home extends React.Component {
 			localStorage.clear();
 		}
 
-		localStorage.setItem('savedAt', JSON.stringify(now));
+		// localStorage.setItem('savedAt', JSON.stringify(now));
 	}
 
 	render() {
@@ -35,6 +35,7 @@ class Home extends React.Component {
 				{this._renderEmail()}
 				{this._renderSubmitButtons()}
 				{this._renderFAQ()}
+				{this._renderBulkModal()}
 			</Card>
 		);
 	}
@@ -67,12 +68,21 @@ class Home extends React.Component {
 			<div>
 				<br />
 				<Row type="flex" align="bottom">
-					<Col span={22}>
+					<Col span={12}>
 						<h2>Domain names</h2>
 					</Col>
-					<Col span={2}>
+					<Col span={12} style={{ textAlign: 'right', paddingRight: 14, marginBottom: 3 }}>
 						<Button
-							style={{ margin: 5 }}
+							style={{ margin: 3 }}
+							type="default"
+							size="small"
+							shape="circle"
+							icon="form"
+							onClick={() => this.setState({ showBulkModal: true, bulkModalLines: this._getValidNames().sort((a, b) => a.localeCompare(b)).join('\n') })}
+							disabled={this.state.loading}
+						/>
+						<Button
+							style={{ margin: 3 }}
 							type="primary"
 							size="small"
 							shape="circle"
@@ -230,18 +240,46 @@ class Home extends React.Component {
 		)
 	}
 
+	_renderBulkModal() {
+		return (
+			<Modal
+				title="Edit the domain names here"
+				visible={this.state.showBulkModal}
+				maskClosable={false}
+				onOk={() => {
+					const domains = this.state.bulkModalLines.split('\n')
+						.map(name => name.trim())
+						.filter(name => name.length > 0)
+						.sort((a, b) => a.localeCompare(b))
+						.map((name, i) => this._getUpdatedDomain(i, name));
+
+					this.setState({ domains, showBulkModal: false, bulkModalLines: '' });
+					// localStorage.setItem('domains', JSON.stringify(domains));
+				}}
+				onCancel={() => this.setState({ showBulkModal: false, bulkModalLines: '' })}
+			>
+				<p>Write each domain name in a separate line:</p>
+				<Input.TextArea
+					autosize={{ minRows: 5, maxRows: 17 }}
+					value={this.state.bulkModalLines}
+					onChange={(evt) => this.setState({ bulkModalLines: evt.target.value })}
+				/>
+			</Modal>
+		);
+	}
+
 	_onClickAddDomain = () => {
 		const domains = [...this.state.domains];
 		domains.push(createEmptyDomain());
 		this.setState({ domains });
-		localStorage.setItem('domains', JSON.stringify(domains));
+		// localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onClickRemoveDomain = (i) => {
 		const domains = [...this.state.domains];
 		domains.splice(i, 1);
 		this.setState({ domains });
-		localStorage.setItem('domains', JSON.stringify(domains));
+		// localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeDomainName = (i, name) => {
@@ -249,14 +287,14 @@ class Home extends React.Component {
 		const domains = [...this.state.domains];
 		domains[i] = domain;
 		this.setState({ domains });
-		localStorage.setItem('domains', JSON.stringify(domains));
+		// localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeEmail = (email) => {
 		const emailHasError = email.length > 0 && !validateEmail(email);
 		const domains = this.state.domains.map((domain, i) => this._getUpdatedDomain(i, domain.name));
 		this.setState({ email, emailHasError, domains });
-		localStorage.setItem('email', JSON.stringify(email));
+		// localStorage.setItem('email', JSON.stringify(email));
 	}
 
 	_getUpdatedDomain = (i, name) => {
@@ -292,6 +330,10 @@ class Home extends React.Component {
 			.value();
 	}
 
+	_onClickBulk = () => {
+
+	}
+
 	_onClickPay = async () => {
 		if (this.state.email.length === 0 || this.state.emailHasError) {
 			notifyProblem('Problem', 'Please fix the problems in order to proceed');
@@ -314,6 +356,13 @@ class Home extends React.Component {
 
 		this.setState({ loading: true });
 
+		async function wait(t) {
+			return new Promise(resolve => {
+				setTimeout(resolve, t);
+			});
+		}
+
+		const hide = message.loading('This may take a while, please be patient...', 0);
 		const precheckoutResponse = await fetch('/api/precheckout', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -322,6 +371,13 @@ class Home extends React.Component {
 				email: this.state.email,
 			}),
 		}).then(response => response.json());
+		hide();
+
+		if (precheckoutResponse.ok !== true) {
+			notifyProblem('Problem', 'There was a problem');
+			this.setState({ loading: false });
+			return;
+		}
 
 		const resultByName = precheckoutResponse.result || {};
 
@@ -367,9 +423,17 @@ class Home extends React.Component {
 			}),
 		}).then(response => response.json());
 
-		notifySuccess('Thank you for using our service!', `You will receive a weekly reports at ${this.state.email}`);
-		this.setState({ ...createInitialState(), email: this.state.email });
+		if (postcheckoutResponse.ok !== true) {
+			notifyProblem('Problem', 'There was a problem');
+			this.setState({ loading: false });
+			return;
+		}
+		// }
+		// });
+
 		localStorage.clear();
+		notifySuccess('Thank you for using our service!', `You will receive weekly reports at ${this.state.email}`);
+		this.setState({ ...createInitialState(), email: this.state.email });
 	}
 }
 
@@ -387,6 +451,8 @@ function createInitialState() {
 		email,
 		emailHasError: false,
 		loading: false,
+		showBulkModal: false,
+		bulkModalLines: '',
 	};
 }
 
@@ -409,6 +475,13 @@ function formatPrice(price) {
 function validateEmail(email) {
 	var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 	return re.test(String(email).toLowerCase());
+}
+
+function notify(title, description) {
+	notification.open({
+		message: title,
+		description: description,
+	});
 }
 
 function notifyProblem(title, description) {
