@@ -63,7 +63,6 @@ class Home extends React.Component {
 	}
 
 	_renderDomainList() {
-		console.log('this.state.domains.length', this.state.domains.length);
 		return (
 			<div>
 				<br />
@@ -130,7 +129,15 @@ class Home extends React.Component {
 				<br />
 				<h2>Your Email</h2>
 				<Form>
-					<Form.Item style={{ marginBottom: 1 }}>
+					<Form.Item
+						style={{ marginBottom: 1 }}
+						validateStatus={this.state.emailHasError ? 'error' : 'success'}
+						help={this.state.emailHasError &&
+							<p style={{ marginLeft: 12, marginTop: 2, marginBottom: 0, fontSize: '0.9em' }}>
+								{this.state.emailHasError}
+							</p>
+						}
+					>
 						<Row>
 							<Col span={22}>
 								<Input
@@ -145,8 +152,6 @@ class Home extends React.Component {
 						</Row>
 					</Form.Item>
 				</Form>
-
-				<p style={{ color: 'red', fontSize: '0.95em' }}>{this.state.emailErrorMessage}</p>
 			</div>
 		)
 	}
@@ -280,13 +285,14 @@ class Home extends React.Component {
 	}
 
 	_onChangeEmail = (email) => {
-		this.setState({ email, emailErrorMessage: '' });
+		const emailHasError = email.length > 0 && !validateEmail(email);
+		this.setState({ email, emailHasError });
 		localStorage.setItem('email', JSON.stringify(email));
 	}
 
 	_onClickPay = async () => {
 		if (!this.state.loading) {
-			this.setState({ loading: true, domainsErrorMessage: '', emailErrorMessage: '' });
+			this.setState({ loading: true, domainsErrorMessage: '', emailHasError: '' });
 			let continueToServer = true;
 
 			// validate domains client-side
@@ -313,7 +319,7 @@ class Home extends React.Component {
 
 			// validate email
 			if (!validateEmail(this.state.email)) {
-				this.setState({ loading: false, emailErrorMessage: 'Please provide a valid email address' });
+				this.setState({ loading: false, emailHasError: 'Please provide a valid email address' });
 				continueToServer = false;
 			}
 
@@ -355,7 +361,7 @@ class Home extends React.Component {
 			const unmonitored = response2.unmonitored;
 
 			if (unmonitored.length === 0) {
-				this.setState({ loading: false, domains: domains2, emailErrorMessage: 'All the listed domains are already being monitored by this email' });
+				this.setState({ loading: false, domains: domains2, emailHasError: 'All the listed domains are already being monitored by this email' });
 				return;
 			}
 
@@ -385,7 +391,7 @@ class Home extends React.Component {
 			// 	},
 			// });
 
-			this.setState({ loading: false, domainsErrorMessage: '', emailErrorMessage: '' });
+			this.setState({ loading: false, domainsErrorMessage: '', emailHasError: '' });
 		}
 	}
 }
@@ -402,7 +408,7 @@ function createInitialState() {
 	return {
 		domains,
 		email,
-		emailErrorMessage: '',
+		emailHasError: '',
 		loading: false,
 	};
 }
