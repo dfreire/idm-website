@@ -9,8 +9,10 @@ const VERSION = 1;
 const inBrowser = typeof document !== 'undefined';
 
 const currency = '$';
-const basePrice = 1.50;
-const priceFormat = `${currency}0.00`;
+const basePrice = 1;
+// const priceFormat = `${currency}0.00`;
+const priceFormat = `${currency}0`;
+
 
 class Home extends React.Component {
 	state = createInitialState();
@@ -489,8 +491,8 @@ function formatPrice(price) {
 	return (
 		<span>
 			<span>{tokens[0]}</span>
-			<span>.</span>
-			<span style={{ fontSize: '0.9em' }}>{tokens[1]}</span>
+			{tokens.length === 2 && <span>.</span>}
+			{tokens.length === 2 && <span style={{ fontSize: '0.9em' }}>{tokens[1]}</span>}
 		</span>
 	);
 }
