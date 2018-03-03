@@ -230,7 +230,7 @@ class Home extends React.Component {
 				size="large"
 				disabled={this.state.loading}
 			>
-				Or give us your feedback
+				Or send us your feedback
 			</Button>
 		);
 	}
@@ -245,7 +245,7 @@ class Home extends React.Component {
 					<br />
 					<h3>Can I add more domains later?</h3>
 					<p>Yes, you can simply create a new list and use the same email address as before. We will consolidate all your domain names and deliver a single weekly report.</p>
-					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically detect duplicates and we do not charge twice.</p>
+					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically remove duplicates.</p>
 
 					<br />
 					<h3>Can I remove domains from my report?</h3>

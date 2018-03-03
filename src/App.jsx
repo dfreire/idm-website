@@ -16,8 +16,8 @@ const App = () => (
 				<Routes />
 			</div>
 			<div style={{ textAlign: 'center', marginTop: 20, fontSize: '0.9em' }}>
-				<Link to="/about">Privacy Policy</Link>&nbsp;|&nbsp;
-				<Link to="/about">Cookies Policy</Link>
+				<Link to="/about">Privacy</Link>&nbsp;|&nbsp;
+				<Link to="/about">Cookies</Link>
 			</div>
 		</div>
 	</Router>
