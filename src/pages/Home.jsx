@@ -62,7 +62,7 @@ class Home extends React.Component {
 				<br />
 				<h2>How it works</h2>
 				<ol style={{ paddingLeft: 30, lineHeight: '1.8em' }}>
-					<li>List the domain names you want to monitor</li>
+					<li>Write down the domain names you want to monitor</li>
 					<li>Pay {formatPrice(basePrice)}/year for each monitored domain</li>
 					<li>Receive a weekly report by email (see <a>example</a>)</li>
 				</ol>
@@ -245,7 +245,7 @@ class Home extends React.Component {
 					<br />
 					<h3>Can I add more domains later?</h3>
 					<p>Yes, you can simply create a new list and use the same email address as before. We will consolidate all your domain names and deliver a single weekly report.</p>
-					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically remove duplicates.</p>
+					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically remove duplicates and do not charge twice.</p>
 
 					<br />
 					<h3>Can I remove domains from my report?</h3>
@@ -259,6 +259,8 @@ class Home extends React.Component {
 					<h3>Which domain extensions (TLDs) do you support?</h3>
 					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs.</p>
 					<p>We also validate all the domain names in your list before you pay, so unsupported TLDs will not be included.</p>
+
+					<br />
 				</div>
 			</div>
 		)
