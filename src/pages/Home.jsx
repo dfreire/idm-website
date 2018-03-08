@@ -9,7 +9,8 @@ const VERSION = 1;
 const inBrowser = typeof document !== 'undefined';
 
 const currency = '$';
-const basePrice = 1;
+const basePrice = 10;
+const baseQty = 10;
 // const priceFormat = `${currency}0.00`;
 const priceFormat = `${currency}0`;
 
@@ -60,12 +61,17 @@ class Home extends React.Component {
 		return (
 			<div>
 				<br />
-				<h2>How it works</h2>
-				<ol style={{ paddingLeft: 30, lineHeight: '1.8em' }}>
+				<h2>How does it work?</h2>
+				<ol style={{ paddingLeft: 15, lineHeight: '1.8em' }}>
 					<li>Write down the domain names you want to monitor</li>
-					<li>Pay {formatPrice(basePrice)}/year for each monitored domain</li>
-					<li>Receive a weekly report by email (see <a>example</a>)</li>
+					<li>Pay the yearly subscription</li>
+					<li>Receive a monthly report by email (see <a>example</a>)</li>
 				</ol>
+
+				<br />
+				<h2>How much does it cost?</h2>
+				<p> {formatPrice(basePrice)}/year for up to {baseQty} domain names, {formatPrice(basePrice * 2)}/year for up to {baseQty * 2} domain names, etc.</p>
+
 			</div>
 		);
 	}
@@ -76,7 +82,7 @@ class Home extends React.Component {
 				<br />
 				<Row type="flex" align="bottom">
 					<Col span={12}>
-						<h2>Domain names</h2>
+						<h2>Your domain names list</h2>
 					</Col>
 					<Col span={12} style={{ textAlign: 'right', paddingRight: 14, marginBottom: 3 }}>
 						<Button
@@ -207,8 +213,6 @@ class Home extends React.Component {
 	}
 
 	_renderPayButton() {
-		const validNames = this._getValidNames();
-
 		return (
 			<Button
 				style={{ width: '100%' }}
@@ -217,7 +221,7 @@ class Home extends React.Component {
 				onClick={this._onClickPay}
 				loading={this.state.loading}
 			>
-				Start monitoring for {formatPrice(validNames.length * basePrice)}
+				Start monitoring for {formatPrice(this._getPrice())}
 			</Button>
 		);
 	}
@@ -244,21 +248,33 @@ class Home extends React.Component {
 				<div>
 					<br />
 					<h3>Can I add more domains later?</h3>
-					<p>Yes, you can simply create a new list and use the same email address as before. We will consolidate all your domain names and deliver a single weekly report.</p>
-					<p>If you happen to repeat a domain name you were already monitoring, don't worry, we automatically remove duplicates and do not charge twice.</p>
+					<p>Yes, and you don't have to worry if you repeat a domain name you were already monitoring, we automatically detect duplicates and do not charge twice.</p>
 
 					<br />
-					<h3>Can I remove domains from my report?</h3>
-					<p>You can contact <a>support</a> to do it for you.</p>
+					<h3>Can I remove or replace domains from my report?</h3>
+					<p>Yes, but you need to contact our <a>support</a> to do it for you. We need to make sure there isn't anyone trying to abuse our service.</p>
 
 					<br />
 					<h3>Can I change my email address?</h3>
-					<p>You can contact <a>support</a> to do it for you.</p>
+					<p>Yes, you can contact <a>support</a> to do it for you.</p>
 
 					<br />
-					<h3>Which domain extensions (TLDs) do you support?</h3>
-					<p>Although we cannot guarantee we will support all TLDs in existence, our goal is to support as many as possible. We currently support more than 1000 TLDs, including the most popular gTLDs and ccTLDs.</p>
-					<p>We also validate all the domain names in your list before you pay, so unsupported TLDs will not be included.</p>
+					<h3>Which domain name extensions (TLDs) do you support?</h3>
+					<p>We support thousands of domain name extensions, including the most popular generic extensions (gTLDs) and country code extensions (ccTLDs).</p>
+					<p>We also validate the domain names in your list before you pay, so it will be clear to you which ones are unsupported or invalid.</p>
+
+					<br />
+					<h3>Why should I use this?</h3>
+					<p>You can use it to monitor the domain names you want to get after they expire.</p>
+					<p>You can use it to check the details of all the domain names you own in a single report, instead of having to visit the different admin panels of the registars you use.</p>
+					<p>Or, like me, you have been burned by a domain name registar once and decided to use an indepentent monitoring service (see bellow).</p>
+
+					<br />
+					<h3>Why have you created this service?</h3>
+					<p>I got burned by a domain name registar once.</p>
+					<p>One year, after renewing my domains, I checked the new expiration date in the registar's admin panel and everything seemed ok.</p>
+					<p>Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire. I then checked all the other domain names and none was renewed, although their admin panel said otherwise!</p>
+					<p>Since then, I decided to never blindly trust a registar again, so I created this tool to help me indepentently monitor the details of the domains I own.</p>
 
 					<br />
 				</div>
@@ -296,6 +312,14 @@ class Home extends React.Component {
 				/>
 			</Modal>
 		);
+	}
+
+	_getPrice() {
+		const validNames = this._getValidNames();
+		const validLen = validNames.length;
+		const qty = validLen % baseQty === 0 ? validLen : Math.floor(validLen / baseQty) * baseQty + baseQty;
+		const price = qty * (baseQty / basePrice);
+		return price;
 	}
 
 	_onClickAddDomain = () => {
@@ -358,7 +382,7 @@ class Home extends React.Component {
 
 		const validNames = this._getValidNames();
 		if (validNames.length === 0) {
-			notifyProblem('Problem', 'Please insert some domains');
+			notifyProblem('Problem', 'Please write down some domains');
 			return;
 		}
 
@@ -431,7 +455,7 @@ class Home extends React.Component {
 		// }
 		// });
 
-		notifySuccess('Thank you for using our service!', `You will receive weekly reports at ${this.state.email}`);
+		notifySuccess('Thank you for using our service!', `You will receive monthly reports at ${this.state.email}`);
 		this.setState(createInitialState());
 		localStorage.clear();
 		window.scrollTo(0, 0);
@@ -439,9 +463,14 @@ class Home extends React.Component {
 }
 
 function createInitialState() {
+	const domains = [];
+	for (let i = 0; i < 10; i++) {
+		domains.push(createEmptyDomain());
+	}
+
 	return {
 		loading: false,
-		domains: [createEmptyDomain()],
+		domains,
 		email: '',
 		emailHasError: false,
 		bulkModalVisible: false,
