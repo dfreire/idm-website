@@ -8,6 +8,7 @@ import psl from 'psl'
 const VERSION = 1;
 const inBrowser = typeof document !== 'undefined';
 
+const serviceName = 'Instant Domain Monitor';
 const currency = '$';
 const basePrice = 10;
 const baseQty = 10;
@@ -51,7 +52,7 @@ class Home extends React.Component {
 	_renderHeader() {
 		return (
 			<div>
-				<h1>Instant Domain Monitor</h1>
+				<h1>{serviceName}</h1>
 				<p>Start monitoring the domain names you care about</p>
 			</div>
 		);
@@ -265,8 +266,8 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Why should I use this?</h3>
-					<p>Consider this experience, from the creator of Instant Domain Monitor:</p>
-					<div style={{ paddingLeft: 10, paddingRight: 10 }}>
+					<p>Consider this experience, from the creator of {serviceName}:</p>
+					<div style={{ paddingLeft: 14, paddingRight: 14 }}>
 						<p><em>“I got burned by a domain name registrar.
 						Last year, after renewing my domains, I checked the new expiration date in the registrar's admin panel and everything seemed ok.
 						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all the other domain names and none was renewed, although their admin panel said otherwise!
