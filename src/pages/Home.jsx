@@ -52,7 +52,7 @@ class Home extends React.Component {
 		return (
 			<div>
 				<h1>Instant Domain Monitor</h1>
-				<p>Start monitoring the expiration date of any domain name</p>
+				<p>Start monitoring the domain names you care about</p>
 			</div>
 		);
 	}
@@ -260,22 +260,24 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Which domain name extensions (TLDs) do you support?</h3>
-					<p>We support thousands of domain name extensions, including the most popular generic extensions (gTLDs) and country code extensions (ccTLDs).</p>
+					<p>We support thousands of domain name extensions. This is actually what sets us apart from the competition.</p>
 					<p>We also validate the domain names in your list before you pay, so it will be clear to you which ones are unsupported or invalid.</p>
 
 					<br />
 					<h3>Why should I use this?</h3>
-					<p>You can use it to monitor the domain names you want to get after they expire.</p>
-					<p>You can use it to check the details of all the domain names you own in a single report, instead of having to visit the different admin panels of the registars you use.</p>
-					<p>Or, like me, you have been burned by a domain name registar once and decided to use an indepentent monitoring service (see bellow).</p>
+					<p>Consider this experience, from the creator of Instant Domain Monitor:</p>
+					<div style={{ paddingLeft: 10, paddingRight: 10 }}>
+						<p><em>“I got burned by a domain name registrar.
+						Last year, after renewing my domains, I checked the new expiration date in the registrar's admin panel and everything seemed ok.
+						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all the other domain names and none was renewed, although their admin panel said otherwise!
+						Since then, I decided to never blindly trust a registrar again.”</em> ~ Dário Freire</p>
+					</div>
+					<p>So, maybe you also had bad experiences with your registrar and decided to use an <b>independent domain monitoring service</b>.</p>
+					<p>Or you simply want to check the details of <b>all the domain names you own in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
+					<p>Or, you have been using alternative services and you've just found out <b>they don't support all the domain extensions you need</b>.</p>
+					<p>This service was born from scratching our own itch and has grown to accommodate more and more people's feedback. If you have similar needs, <a>please tell us</a>.</p>
 
 					<br />
-					<h3>Why have you created this service?</h3>
-					<p>I got burned by a domain name registar once.</p>
-					<p>One year, after renewing my domains, I checked the new expiration date in the registar's admin panel and everything seemed ok.</p>
-					<p>Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire. I then checked all the other domain names and none was renewed, although their admin panel said otherwise!</p>
-					<p>Since then, I decided to never blindly trust a registar again, so I created this tool to help me indepentently monitor the details of the domains I own.</p>
-
 					<br />
 				</div>
 			</div>
