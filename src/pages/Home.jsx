@@ -2,7 +2,7 @@ import _ from 'underscore'
 import numeral from 'numeral';
 import React from 'react'
 import { withSiteData } from 'react-static'
-import { Card, Form, Row, Col, Input, Button, Modal, notification, message } from 'antd'
+import { Form, Row, Col, Input, Button, Modal, notification, message } from 'antd'
 import psl from 'psl'
 
 const VERSION = 1;
@@ -37,7 +37,7 @@ class Home extends React.Component {
 
 	render() {
 		return (
-			<Card>
+			<div>
 				{this._renderHeader()}
 				{this._renderHowItWorks()}
 				{this._renderDomainList()}
@@ -45,7 +45,7 @@ class Home extends React.Component {
 				{this._renderSubmitButtons()}
 				{this._renderFAQ()}
 				{this._renderBulkModal()}
-			</Card>
+			</div>
 		);
 	}
 
@@ -261,7 +261,8 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Which domain name extensions (TLDs) do you support?</h3>
-					<p>We support thousands of domain name extensions. This is actually what sets us apart from the competition.</p>
+					<p>We support thousands of domain name extensions, here's the <a>exhaustive list</a>.</p>
+					<p>As you might notice, <b>the immense variety of extensions we support really sets us apart from the competition</b>.</p>
 					<p>We also validate the domain names in your list before you pay, so it will be clear to you which ones are unsupported or invalid.</p>
 
 					<br />
@@ -271,11 +272,11 @@ class Home extends React.Component {
 						<p><em>“I got burned by a domain name registrar.
 						Last year, after renewing my domains, I checked the new expiration date in the registrar's admin panel and everything seemed ok.
 						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all the other domain names and none was renewed, although their admin panel said otherwise!
-						Since then, I decided to never blindly trust a registrar again.”</em> ~ Dário Freire</p>
+						Since then, I decided to never blindly trust a registrar again.”</em><br/>~ Dário Freire</p>
 					</div>
-					<p>So, maybe you also had bad experiences with your registrar and decided to use an <b>independent domain monitoring service</b>.</p>
-					<p>Or you simply want to check the details of <b>all the domain names you own in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
-					<p>Or, you have been using alternative services and you've just found out <b>they don't support all the domain extensions you need</b>.</p>
+					<p>So, maybe you also had bad experiences with registrars and decided to use an <b>independent domain monitoring service</b>.</p>
+					<p>Or you simply want to check the details of <b>all your domain names in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
+					<p>Or, you have been using an alternative service and you've just found out <b>they don't support a domain extension you need</b>.</p>
 					<p>This service was born from scratching our own itch and has grown to accommodate more and more people's feedback. If you have similar needs, <a>please tell us</a>.</p>
 
 					<br />
