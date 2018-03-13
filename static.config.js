@@ -10,6 +10,10 @@ export default {
 			component: 'src/pages/Home',
 		},
 		{
+			path: '/extensions',
+			component: 'src/pages/Extensions',
+		},
+		{
 			path: '/about',
 			component: 'src/pages/About',
 		},

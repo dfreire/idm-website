@@ -5,6 +5,8 @@ import { withSiteData } from 'react-static'
 import { Form, Row, Col, Input, Button, Modal, notification, message } from 'antd'
 import psl from 'psl'
 
+const extensions = require('./_extensions.json');
+
 const VERSION = 1;
 const inBrowser = typeof document !== 'undefined';
 
@@ -261,7 +263,7 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Which domain name extensions (TLDs) do you support?</h3>
-					<p>We support thousands of domain name extensions, here's the <a>exhaustive list</a>.</p>
+					<p>We support thousands of domain name extensions, here's the exhaustive <a href="/extensions" target="_blank">list</a>.</p>
 					<p>As you might notice, <b>the immense variety of extensions we support really sets us apart from the competition</b>.</p>
 					<p>We also validate the domain names in your list before you pay, so it will be clear to you which ones are unsupported or invalid.</p>
 
@@ -272,7 +274,7 @@ class Home extends React.Component {
 						<p><em>“I got burned by a domain name registrar.
 						Last year, after renewing my domains, I checked the new expiration date in the registrar's admin panel and everything seemed ok.
 						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all the other domain names and none was renewed, although their admin panel said otherwise!
-						Since then, I decided to never blindly trust a registrar again.”</em><br/>~ Dário Freire</p>
+						Since then, I decided to never blindly trust a registrar again.”</em><br />~ Dário Freire</p>
 					</div>
 					<p>So, maybe you also had bad experiences with registrars and decided to use an <b>independent domain monitoring service</b>.</p>
 					<p>Or you simply want to check the details of <b>all your domain names in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
