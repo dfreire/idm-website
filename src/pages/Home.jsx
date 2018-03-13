@@ -54,7 +54,7 @@ class Home extends React.Component {
 
 	_renderHowItWorks() {
 		return (
-			<div style={{ width: 600, margin: 'auto', paddingTop: 75 }}>
+			<div style={{ width: 600, margin: 'auto', paddingTop: 50 }}>
 				<h2>How does it work?</h2>
 				<ol style={{ paddingLeft: 15, lineHeight: '1.8em' }}>
 					<li>Write down the domain names you want to monitor</li>
@@ -278,7 +278,7 @@ class Home extends React.Component {
 	_renderBulkModal() {
 		return (
 			<Modal
-				title="Edit the domain names here"
+				title="Write each domain name in a separate line:"
 				visible={this.state.bulkModalVisible}
 				maskClosable={false}
 				onCancel={() => this.setState({ bulkModalVisible: false, bulkModalLines: '' })}
@@ -297,9 +297,8 @@ class Home extends React.Component {
 					constants.inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 				}}
 			>
-				<p>Write each domain name in a separate line:</p>
 				<Input.TextArea
-					autosize={{ minRows: 5, maxRows: 17 }}
+					autosize={{ minRows: 10, maxRows: 20 }}
 					value={this.state.bulkModalLines}
 					onChange={(evt) => this.setState({ bulkModalLines: evt.target.value })}
 				/>
