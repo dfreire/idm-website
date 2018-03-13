@@ -6,8 +6,6 @@ import { Form, Row, Col, Input, Button, Modal, notification, message } from 'ant
 import psl from 'psl'
 import * as constants from './constants';
 
-console.log(constants.tlds);
-
 class Home extends React.Component {
 	state = createInitialState();
 
@@ -61,7 +59,7 @@ class Home extends React.Component {
 				<ol style={{ paddingLeft: 15, lineHeight: '1.8em' }}>
 					<li>Write down the domain names you want to monitor</li>
 					<li>Pay the yearly subscription</li>
-					<li>Receive a monthly report by email (see <a>example</a>)</li>
+					<li>Receive a monthly report by email (see an <a href="/example_report.pdf" target="_blank">example</a>)</li>
 				</ol>
 
 				<br />
