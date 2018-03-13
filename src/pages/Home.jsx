@@ -4,29 +4,17 @@ import React from 'react'
 import { withSiteData } from 'react-static'
 import { Form, Row, Col, Input, Button, Modal, notification, message } from 'antd'
 import psl from 'psl'
-
-const extensions = require('./_extensions.json');
-
-const VERSION = 1;
-const inBrowser = typeof document !== 'undefined';
-
-const serviceName = 'Instant Domain Monitor';
-const currency = '$';
-const basePrice = 10;
-const baseQty = 10;
-// const priceFormat = `${currency}0.00`;
-const priceFormat = `${currency}0`;
-
+import * as constants from './constants';
 
 class Home extends React.Component {
 	state = createInitialState();
 
 	componentWillMount() {
-		if (inBrowser) {
+		if (constants.inBrowser) {
 			Paddle.Setup({ vendor: 21790 });
 
 			const version = JSON.parse(localStorage.getItem('version')) || 0;
-			if (version === VERSION) {
+			if (version === constants.version) {
 				const domains = JSON.parse(localStorage.getItem('domains')) || [createEmptyDomain()];
 				const email = JSON.parse(localStorage.getItem('email')) || '';
 				this.setState({ ...createInitialState(), domains, email });
@@ -55,8 +43,8 @@ class Home extends React.Component {
 		return (
 			<div className="hero" style={{ color: '#f1f1f1', textAlign: 'center' }}>
 				<div style={{ width: 600, margin: 'auto', paddingTop: 100, paddingBottom: 100 }}>
-					<h1 style={{ fontSize: '3em' }}>{serviceName}</h1>
-					<span style={{ backgroundColor: '#ABEBC6', color: '#333', padding: '5px 10px', fontSize: '1.1em' }}>
+					<h1 style={{ fontSize: '3em' }}>{constants.serviceName}</h1>
+					<span style={{ backgroundColor: '#ABEBC6', color: '#111', padding: '5px 10px', fontSize: '1.1em' }}>
 						Start monitoring the domain names you care about
 					</span>
 				</div>
@@ -66,7 +54,7 @@ class Home extends React.Component {
 
 	_renderHowItWorks() {
 		return (
-			<div style={{ width: 600, margin: 'auto', paddingTop: 50 }}>
+			<div style={{ width: 600, margin: 'auto', paddingTop: 75 }}>
 				<h2>How does it work?</h2>
 				<ol style={{ paddingLeft: 15, lineHeight: '1.8em' }}>
 					<li>Write down the domain names you want to monitor</li>
@@ -76,7 +64,7 @@ class Home extends React.Component {
 
 				<br />
 				<h2>How much does it cost?</h2>
-				<p> {formatPrice(basePrice)}/year for up to {baseQty} domain names, {formatPrice(basePrice * 2)}/year for up to {baseQty * 2} domain names, etc.</p>
+				<p> {formatPrice(constants.basePrice)}/year for up to {constants.baseQty} domain names, {formatPrice(constants.basePrice * 2)}/year for up to {constants.baseQty * 2} domain names, etc.</p>
 
 			</div>
 		);
@@ -272,17 +260,15 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Why should I use this?</h3>
-					<p>Consider this experience, from the creator of {serviceName}:</p>
+					<p>Consider this experience from Dário Freire, the creator of {constants.serviceName}:</p>
 					<div style={{ paddingLeft: 14, paddingRight: 14 }}>
-						<p><em>“I got burned by a domain name registrar.
-						Last year, after renewing my domains, I checked the new expiration date in the registrar's admin panel and everything seemed ok.
-						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all the other domain names and none was renewed, although their admin panel said otherwise!
-						Since then, I decided to never blindly trust a registrar again.”</em><br />~ Dário Freire</p>
+						<p><em>“Last year, I renewed all my domains as usual, and I checked the new expiration date in the registrar's admin panel. Everything seemed ok.
+						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all other domain names and none was renewed! My registrar made a mistake, charged me for it, and would lose my domains if I hadn't noticed the problem!”</em></p>
 					</div>
 					<p>So, maybe you also had bad experiences with registrars and decided to use an <b>independent domain monitoring service</b>.</p>
 					<p>Or you simply want to check the details of <b>all your domain names in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
 					<p>Or, you have been using an alternative service and you've just found out <b>they don't support a domain extension you need</b>.</p>
-					<p>This service was born from scratching our own itch and has grown to accommodate more and more people's feedback. If you have similar needs, <a>please tell us</a>.</p>
+					<p>This service was born from scratching our own itch and has grown to accommodate more and more user's needs. If you have specific requirements, <a>please let us know</a>.</p>
 
 					<br />
 					<br />
@@ -310,7 +296,7 @@ class Home extends React.Component {
 					}
 
 					this.setState({ domains, bulkModalVisible: false, bulkModalLines: '' });
-					inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
+					constants.inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 				}}
 			>
 				<p>Write each domain name in a separate line:</p>
@@ -326,8 +312,8 @@ class Home extends React.Component {
 	_getPrice() {
 		const validNames = this._getValidNames();
 		const validLen = validNames.length;
-		const qty = validLen % baseQty === 0 ? validLen : Math.floor(validLen / baseQty) * baseQty + baseQty;
-		const price = qty * (baseQty / basePrice);
+		const qty = validLen % constants.baseQty === 0 ? validLen : Math.floor(validLen / constants.baseQty) * constants.baseQty + constants.baseQty;
+		const price = qty * (constants.baseQty / constants.basePrice);
 		return price;
 	}
 
@@ -337,7 +323,7 @@ class Home extends React.Component {
 			createEmptyDomain()
 		];
 		this.setState({ domains });
-		inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
+		constants.inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onClickRemoveDomain = (i) => {
@@ -346,7 +332,7 @@ class Home extends React.Component {
 			...this.state.domains.slice(i + 1),
 		];
 		this.setState({ domains });
-		inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
+		constants.inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeDomainName = (i, name) => {
@@ -356,13 +342,13 @@ class Home extends React.Component {
 			...this.state.domains.slice(i + 1),
 		];
 		this.setState({ domains });
-		inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
+		constants.inBrowser && localStorage.setItem('domains', JSON.stringify(domains));
 	}
 
 	_onChangeEmail = (email) => {
 		const emailHasError = email.length > 0 && !validateEmail(email);
 		this.setState({ email, emailHasError });
-		inBrowser && localStorage.setItem('email', JSON.stringify(email));
+		constants.inBrowser && localStorage.setItem('email', JSON.stringify(email));
 	}
 
 	_getValidNames = () => {
@@ -372,7 +358,7 @@ class Home extends React.Component {
 	}
 
 	_onClickPay = async () => {
-		if (!inBrowser) {
+		if (!constants.inBrowser) {
 			return;
 		};
 
@@ -526,7 +512,7 @@ function createDomain(name) {
 }
 
 function formatPrice(price) {
-	const priceStr = numeral(price).format(priceFormat);
+	const priceStr = numeral(price).format(constants.priceFormat);
 	const tokens = priceStr.split('.');
 	return (
 		<span>
