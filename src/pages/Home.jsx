@@ -260,16 +260,14 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Why should I use this?</h3>
-					<p>Consider this experience from Dário Freire, the creator of {constants.serviceName}:</p>
+					<p>Maybe you want to check the details of <b>all your domain names in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
+					<p>Or maybe you have been using an alternative service and you've just found out <b>they don't support a domain extension you need</b>.</p>
+					<p>Or maybe you decided to use an <b>independent domain monitoring service</b> after having a bad a experience with a registrar, such as the one that happened to Dário Freire, the creator of {constants.serviceName}:</p>
 					<div style={{ paddingLeft: 14, paddingRight: 14 }}>
 						<p><em>“Last year, I renewed all my domains as usual, and I checked the new expiration date in the registrar's admin panel. Everything seemed ok.
-						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all other domain names and none was renewed! My registrar made a mistake, charged me for it, and would lose my domains if I hadn't noticed the problem!”</em></p>
+						Several weeks later, I happened to check the whois of one of the domains, just by accident. Imagine my surprise when I saw the domain name was about to expire! I then checked all other domain names and none was renewed, my registrar made a mistake, charged me for it, and would lose my domains if I hadn't noticed!”</em></p>
 					</div>
-					<p>So, maybe you also had bad experiences with registrars and decided to use an <b>independent domain monitoring service</b>.</p>
-					<p>Or you simply want to check the details of <b>all your domain names in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
-					<p>Or, you have been using an alternative service and you've just found out <b>they don't support a domain extension you need</b>.</p>
 					<p>This service was born from scratching our own itch and has grown to accommodate more and more user's needs. If you have specific requirements, <a>please let us know</a>.</p>
-
 					<br />
 					<br />
 				</div>
