@@ -1,4 +1,4 @@
-export const extensions = require('./_extensions.json');
+export const tlds = require('./tlds.json');
 
 export const version = 1;
 export const inBrowser = typeof document !== 'undefined';

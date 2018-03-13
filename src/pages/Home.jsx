@@ -6,6 +6,8 @@ import { Form, Row, Col, Input, Button, Modal, notification, message } from 'ant
 import psl from 'psl'
 import * as constants from './constants';
 
+console.log(constants.tlds);
+
 class Home extends React.Component {
 	state = createInitialState();
 
@@ -493,16 +495,15 @@ function createDomain(name) {
 		domain.status = STATUS.EMPTY;
 
 	} else {
-		const validName = psl.parse(name).domain;
+		const parsedDomain = psl.parse(name);
+		const validName = parsedDomain.domain;
 
-		if (validName) {
+		if (validName && constants.tlds.indexOf(`.${parsedDomain.tld}`) >= 0) {
 			domain.validName = validName;
 			domain.status = STATUS.VALID;
-
 		} else {
 			domain.validName = '';
 			domain.status = STATUS.INVALID;
-
 		}
 	}
 
