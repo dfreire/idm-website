@@ -53,17 +53,20 @@ class Home extends React.Component {
 
 	_renderHeader() {
 		return (
-			<div>
-				<h1>{serviceName}</h1>
-				<p>Start monitoring the domain names you care about</p>
+			<div className="hero" style={{ color: '#f1f1f1', textAlign: 'center' }}>
+				<div style={{ width: 600, margin: 'auto', paddingTop: 100, paddingBottom: 100 }}>
+					<h1 style={{ fontSize: '3em' }}>{serviceName}</h1>
+					<span style={{ backgroundColor: '#ABEBC6', color: '#333', padding: '5px 10px', fontSize: '1.1em' }}>
+						Start monitoring the domain names you care about
+					</span>
+				</div>
 			</div>
 		);
 	}
 
 	_renderHowItWorks() {
 		return (
-			<div>
-				<br />
+			<div style={{ width: 600, margin: 'auto', paddingTop: 50 }}>
 				<h2>How does it work?</h2>
 				<ol style={{ paddingLeft: 15, lineHeight: '1.8em' }}>
 					<li>Write down the domain names you want to monitor</li>
@@ -81,7 +84,7 @@ class Home extends React.Component {
 
 	_renderDomainList() {
 		return !this.state.bulkModalVisible && (
-			<div>
+			<div style={{ width: 600, margin: 'auto' }}>
 				<br />
 				<Row type="flex" align="bottom">
 					<Col span={12}>
@@ -168,7 +171,7 @@ class Home extends React.Component {
 
 	_renderEmail() {
 		return (
-			<div>
+			<div style={{ width: 600, margin: 'auto' }}>
 				<br />
 				<h2>Your Email</h2>
 				<Form>
@@ -201,7 +204,7 @@ class Home extends React.Component {
 
 	_renderSubmitButtons() {
 		return (
-			<div>
+			<div style={{ width: 600, margin: 'auto' }}>
 				<br />
 				<Row gutter={24}>
 					<Col span={11}>
@@ -244,7 +247,7 @@ class Home extends React.Component {
 
 	_renderFAQ() {
 		return (
-			<div>
+			<div style={{ width: 600, margin: 'auto' }}>
 				<br />
 				<br />
 				<h2>FAQ</h2>
@@ -263,7 +266,7 @@ class Home extends React.Component {
 
 					<br />
 					<h3>Which domain name extensions (TLDs) do you support?</h3>
-					<p>We support thousands of domain name extensions, here's the exhaustive <a href="/extensions" target="_blank">list</a>.</p>
+					<p>We support thousands of domain name extensions, here's the exhaustive <a href="/extensions">list</a>.</p>
 					<p>As you might notice, <b>the immense variety of extensions we support really sets us apart from the competition</b>.</p>
 					<p>We also validate the domain names in your list before you pay, so it will be clear to you which ones are unsupported or invalid.</p>
 
