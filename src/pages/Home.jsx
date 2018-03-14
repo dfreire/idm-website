@@ -41,8 +41,8 @@ class Home extends React.Component {
 
 	_renderHeader() {
 		return (
-			<div className="hero" style={{ color: '#f1f1f1', textAlign: 'center' }}>
-				<div style={{ width: 600, margin: 'auto', paddingTop: 100, paddingBottom: 100 }}>
+			<div style={{ backgroundColor: '#fff', color: '#f1f1f1', textAlign: 'center', borderBottom: '1px solid #eee' }}>
+				<div style={{ width: 600, margin: 'auto', paddingTop: 100, paddingBottom: 125 }}>
 					<h1 style={{ fontSize: '3em' }}>{constants.serviceName}</h1>
 					<span style={{ backgroundColor: '#ABEBC6', color: '#111', padding: '5px 10px', fontSize: '1.1em' }}>
 						Start monitoring the domain names you care about
@@ -255,19 +255,9 @@ class Home extends React.Component {
 					<br />
 					<h3>Which domain name extensions (TLDs) do you support?</h3>
 					<p>We support thousands of domain name extensions, here's the exhaustive <a href="/extensions">list</a>.</p>
-					<p>As you might notice, <b>the immense variety of extensions we support really sets us apart from the competition</b>.</p>
 					<p>We also validate the domain names in your list before you pay, so it will be clear to you which ones are unsupported or invalid.</p>
+					<p>On the unlikely case you are having trouble with a domain you think it should be working, please <a href="">contact us</a>.</p>
 
-					<br />
-					<h3>Why should I use this?</h3>
-					<p>Maybe you want to check the details of <b>all your domain names in a single report</b>, instead of having to visit the different admin panels of the registrars you use.</p>
-					<p>Or maybe you have been using an alternative service and you've just found out <b>they don't support a domain extension you need</b>.</p>
-					<p>Or maybe you decided to use an <b>independent domain monitoring service</b> after having a bad a experience with a registrar, such as the one that happened to Dário Freire, the creator of {constants.serviceName}:</p>
-					<div style={{ paddingLeft: 14, paddingRight: 14 }}>
-						<p><em>“Last year, I renewed all my domains as usual, and I checked the new expiration date in the registrar's admin panel. Everything seemed ok.
-						Several weeks later, just by accident, I happened to check the whois of one of the domains. Imagine my surprise when I saw the domain name was about to expire! I then checked all other domain names and none was renewed, my registrar made a mistake, charged me for it, and would lose my domains if I hadn't noticed!”</em></p>
-					</div>
-					<p>This service was born from scratching our own itch and has grown to accommodate more and more user's needs. If you have specific requirements, <a>please let us know</a>.</p>
 					<br />
 					<br />
 				</div>
