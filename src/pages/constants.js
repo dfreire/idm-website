@@ -14,3 +14,9 @@ export const basePrice = 10;
 export const baseQty = 10;
 // export const priceFormat = `${currency}0.00`;
 export const priceFormat = `${currency}0`;
+
+export const feedbackFormUrl = "https://goo.gl/forms/qQBe2c4yt39i8lW73";
+export const addDomainFormUrl = "https://goo.gl/forms/dYSPEDkfrkQlDFK83";
+export const removeDomainFormUrl = "https://goo.gl/forms/DL5Dr3zQG5EGQQyz2";
+export const troubleshootDomainFormUrl = "https://goo.gl/forms/JxGxZ2yuAGDAzqIb2";
+export const changeEmailFormUrl = "https://goo.gl/forms/3Yvak8ZSLDRVKx4k2";

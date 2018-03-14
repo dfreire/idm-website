@@ -64,7 +64,11 @@ class Home extends React.Component {
 
 				<br />
 				<h2>How much does it cost?</h2>
-				<p> {formatPrice(constants.basePrice)}/year for up to {constants.baseQty} domain names, {formatPrice(constants.basePrice * 2)}/year for up to {constants.baseQty * 2} domain names, etc.</p>
+				<p>
+					{formatPrice(constants.basePrice)}/year for up to {constants.baseQty} domain names,&nbsp;
+					{formatPrice(constants.basePrice * 2)}/year for up to {constants.baseQty * 2} domain names,&nbsp;
+					etc.
+				</p>
 
 			</div>
 		);
@@ -202,21 +206,26 @@ class Home extends React.Component {
 						{this._renderFeedbackButton()}
 					</Col>
 				</Row>
+				<p style={{ marginTop: 10 }}>
+					Now supporting <span style={{ fontSize: '1.1em', color: '#E53935' }} >{constants.tlds.length}</span> domain extensions
+				</p>
 			</div>
 		);
 	}
 
 	_renderPayButton() {
 		return (
-			<Button
-				style={{ width: '100%' }}
-				type="primary"
-				size="large"
-				onClick={this._onClickPay}
-				loading={this.state.loading}
-			>
-				Start monitoring for {formatPrice(this._getPrice())}
-			</Button>
+			<div>
+				<Button
+					style={{ width: '100%' }}
+					type="primary"
+					size="large"
+					onClick={this._onClickPay}
+					loading={this.state.loading}
+				>
+					Start monitoring for {formatPrice(this._getPrice())}
+				</Button>
+			</div>
 		);
 	}
 
@@ -227,6 +236,8 @@ class Home extends React.Component {
 				type="dashed"
 				size="large"
 				disabled={this.state.loading}
+				href={constants.feedbackFormUrl}
+				target="_blank"
 			>
 				Or send us your feedback
 			</Button>
@@ -242,21 +253,21 @@ class Home extends React.Component {
 				<div>
 					<br />
 					<h3>Can I add more domains later?</h3>
-					<p>Yes, and you don't have to worry if you repeat a domain name you were already monitoring, we automatically detect duplicates and do not charge twice.</p>
+					<p>Yes, <a href={constants.addDomainFormUrl} target="_blank">here</a>. Also, you don't have to worry if you repeat a domain name you were already monitoring, we automatically detect duplicates and do not charge twice.</p>
 
 					<br />
 					<h3>Can I remove or replace domains from my report?</h3>
-					<p>Yes, but you need to contact our <a>support</a> to do it for you. We need to make sure there isn't anyone trying to abuse our service.</p>
+					<p>Yes, but you need to <a href={constants.removeDomainFormUrl} target="_blank">contact our support</a> to do it for you. We need to make sure there isn't anyone trying to abuse our service.</p>
 
 					<br />
 					<h3>Can I change my email address?</h3>
-					<p>Yes, you can contact <a>support</a> to do it for you.</p>
+					<p>Yes, you can <a href={constants.changeEmailFormUrl} target="_blank">contact support</a> to do it for you.</p>
 
 					<br />
-					<h3>Which domain name extensions (TLDs) do you support?</h3>
-					<p>We support thousands of domain name extensions, here's the exhaustive <a href="/extensions">list</a>.</p>
+					<h3>Which domain extensions (TLDs) do you support?</h3>
+					<p>We support thousands of domain name extensions, here's the exhaustive <a href="/extensions" target="_blank">list</a>.</p>
 					<p>We also validate the domain names in your list before you pay, so it will be clear to you which ones are unsupported or invalid.</p>
-					<p>On the unlikely case you are having trouble with a domain you think it should be working, please <a href="">contact us</a>.</p>
+					<p>In the unlikely situation you are having trouble with a domain name you think it should be working, please <a href={constants.troubleshootDomainFormUrl} target="_blank">tell us</a>.</p>
 
 					<br />
 					<br />
